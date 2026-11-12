@@ -7,8 +7,9 @@
 #include "Vtop___024root.h"
 
 // Parameter definitions for Vtop___024root
-constexpr IData/*16:0*/ Vtop___024root::crc17_canfd__DOT__POLY;
-constexpr IData/*16:0*/ Vtop___024root::crc17_canfd__DOT__MASK;
+constexpr IData/*31:0*/ Vtop___024root::crc_canfd__DOT__CRC_WIDTH;
+constexpr IData/*20:0*/ Vtop___024root::crc_canfd__DOT__POLY_17;
+constexpr IData/*20:0*/ Vtop___024root::crc_canfd__DOT__POLY_21;
 
 
 void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf);

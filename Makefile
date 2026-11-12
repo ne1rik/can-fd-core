@@ -1,8 +1,11 @@
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/bit_stuffer.sv $(PWD)/rtl/crc17_canfd.sv
-TOPLEVEL = crc17_canfd
-COCOTB_TEST_MODULES = tb.test_crc17
+VERILOG_SOURCES = $(PWD)/rtl/crc_canfd.sv
+TOPLEVEL = crc_canfd
+COCOTB_TEST_MODULES = tb.test_crc21
 SIM ?= verilator
+
+# Передаём параметр CRC_WIDTH=21 в Verilator
+EXTRA_ARGS = -GCRC_WIDTH=21
 
 export PYTHONPATH := $(PWD)/tb:$(PYTHONPATH)
 

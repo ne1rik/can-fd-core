@@ -19,20 +19,21 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     VL_IN8(data_in,0,0);
     VL_IN8(data_in_valid,0,0);
     VL_IN8(crc_reset,0,0);
-    CData/*0:0*/ crc17_canfd__DOT__clk;
-    CData/*0:0*/ crc17_canfd__DOT__rst_n;
-    CData/*0:0*/ crc17_canfd__DOT__data_in;
-    CData/*0:0*/ crc17_canfd__DOT__data_in_valid;
-    CData/*0:0*/ crc17_canfd__DOT__crc_reset;
+    CData/*0:0*/ crc_canfd__DOT__clk;
+    CData/*0:0*/ crc_canfd__DOT__rst_n;
+    CData/*0:0*/ crc_canfd__DOT__data_in;
+    CData/*0:0*/ crc_canfd__DOT__data_in_valid;
+    CData/*0:0*/ crc_canfd__DOT__crc_reset;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
     CData/*0:0*/ __Vtrigprevexpr___TOP__rst_n__0;
     CData/*0:0*/ __VactContinue;
-    VL_OUT(crc_out,16,0);
-    IData/*16:0*/ crc17_canfd__DOT__crc_out;
-    IData/*16:0*/ crc17_canfd__DOT__crc_reg;
-    IData/*16:0*/ crc17_canfd__DOT__shifted;
+    VL_OUT(crc_out,20,0);
+    IData/*20:0*/ crc_canfd__DOT__crc_out;
+    IData/*20:0*/ crc_canfd__DOT__crc_reg;
+    IData/*20:0*/ crc_canfd__DOT__shifted;
+    IData/*20:0*/ crc_canfd__DOT__poly;
     IData/*31:0*/ __VactIterCount;
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
@@ -43,8 +44,9 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     Vtop__Syms* const vlSymsp;
 
     // PARAMETERS
-    static constexpr IData/*16:0*/ crc17_canfd__DOT__POLY = 0x0001685bU;
-    static constexpr IData/*16:0*/ crc17_canfd__DOT__MASK = 0x0001ffffU;
+    static constexpr IData/*31:0*/ crc_canfd__DOT__CRC_WIDTH = 0x00000015U;
+    static constexpr IData/*20:0*/ crc_canfd__DOT__POLY_17 = 0x0001685bU;
+    static constexpr IData/*20:0*/ crc_canfd__DOT__POLY_21 = 0x00102899U;
 
     // CONSTRUCTORS
     Vtop___024root(Vtop__Syms* symsp, const char* v__name);

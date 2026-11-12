@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       
@@ -16,19 +16,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          # Добавлен libfl-dev, который содержит недостающий FlexLexer.h
-          sudo apt-get install -y git make autoconf g++ flex bison help2man libfl-dev
-          
-      - name: Install Verilator
-        run: |
-          git clone https://github.com/verilator/verilator.git
-          cd verilator
-          git checkout v5.036
-          autoconf
-          ./configure
-          make -j$(nproc)
-          sudo make install
-          cd ..
+          sudo apt-get install -y verilator make g++
           
       - name: Install Python dependencies
         run: |
@@ -37,3 +25,5 @@ jobs:
           
       - name: Run Cocotb tests
         run: make
+        env:
+          PYTHONPATH: ${{ github.workspace }}/tb:${{ env.PYTHONPATH }}

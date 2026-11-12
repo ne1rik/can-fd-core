@@ -13,10 +13,14 @@ jobs:
         with:
           python-version: '3.12'
           
-      - name: Install Verilator
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git make autoconf g++ flex bison help2man
+          # Добавлен libfl-dev, который содержит недостающий FlexLexer.h
+          sudo apt-get install -y git make autoconf g++ flex bison help2man libfl-dev
+          
+      - name: Install Verilator
+        run: |
           git clone https://github.com/verilator/verilator.git
           cd verilator
           git checkout v5.036

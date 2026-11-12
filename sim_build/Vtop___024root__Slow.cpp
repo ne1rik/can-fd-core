@@ -7,9 +7,15 @@
 #include "Vtop___024root.h"
 
 // Parameter definitions for Vtop___024root
-constexpr IData/*31:0*/ Vtop___024root::crc_canfd__DOT__CRC_WIDTH;
-constexpr IData/*20:0*/ Vtop___024root::crc_canfd__DOT__POLY_17;
-constexpr IData/*20:0*/ Vtop___024root::crc_canfd__DOT__POLY_21;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__IDLE;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_RAW;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_STUFF;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_FSB1;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_SC;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_CRC;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_TAIL;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__F_SHIFT;
+constexpr IData/*31:0*/ Vtop___024root::can_fd_tx__DOT__DONE;
 
 
 void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf);

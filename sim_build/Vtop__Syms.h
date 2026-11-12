@@ -31,7 +31,7 @@ class alignas(VL_CACHE_LINE_BYTES)Vtop__Syms final : public VerilatedSyms {
 
     // SCOPE NAMES
     VerilatedScope __Vscope_TOP;
-    VerilatedScope __Vscope_crc_canfd;
+    VerilatedScope __Vscope_can_fd_tx;
 
     // SCOPE HIERARCHY
     VerilatedHierarchy __Vhier;

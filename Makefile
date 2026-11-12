@@ -1,12 +1,7 @@
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/crc_canfd.sv
-TOPLEVEL = crc_canfd
-COCOTB_TEST_MODULES = tb.test_crc21
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv
+TOPLEVEL = can_fd_tx
+COCOTB_TEST_MODULES = tb.test_can_fd_tx
 SIM ?= verilator
-
-# Передаём параметр CRC_WIDTH=21 в Verilator
-EXTRA_ARGS = -GCRC_WIDTH=21
-
 export PYTHONPATH := $(PWD)/tb:$(PYTHONPATH)
-
 include $(shell cocotb-config --makefiles)/Makefile.sim

@@ -11,13 +11,26 @@ VL_ATTR_COLD void Vtop___024root___eval_static(Vtop___024root* vlSelf) {
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     vlSelfRef.__Vtrigprevexpr___TOP__clk__0 = vlSelfRef.clk;
-    vlSelfRef.__Vtrigprevexpr___TOP__rst__0 = vlSelfRef.rst;
+    vlSelfRef.__Vtrigprevexpr___TOP__rst_n__0 = vlSelfRef.rst_n;
 }
+
+VL_ATTR_COLD void Vtop___024root___eval_initial__TOP(Vtop___024root* vlSelf);
 
 VL_ATTR_COLD void Vtop___024root___eval_initial(Vtop___024root* vlSelf) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtop___024root___eval_initial\n"); );
     Vtop__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
+    // Body
+    Vtop___024root___eval_initial__TOP(vlSelf);
+}
+
+VL_ATTR_COLD void Vtop___024root___eval_initial__TOP(Vtop___024root* vlSelf) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vtop___024root___eval_initial__TOP\n"); );
+    Vtop__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
+    auto& vlSelfRef = std::ref(*vlSelf).get();
+    // Body
+    vlSelfRef.can_fd_ctrl__DOT__can_tx = 1U;
+    vlSelfRef.can_fd_ctrl__DOT__can_tx_enable = 0U;
 }
 
 VL_ATTR_COLD void Vtop___024root___eval_final(Vtop___024root* vlSelf) {
@@ -47,7 +60,7 @@ VL_ATTR_COLD void Vtop___024root___eval_settle(Vtop___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vtop___024root___dump_triggers__stl(vlSelf);
 #endif
-            VL_FATAL_MT("/root/can-fd-core/rtl/dummy.sv", 1, "", "Settle region did not converge.");
+            VL_FATAL_MT("/root/can-fd-core/rtl/can_fd_ctrl.sv", 3, "", "Settle region did not converge.");
         }
         __VstlIterCount = ((IData)(1U) + __VstlIterCount);
         __VstlContinue = 0U;
@@ -130,7 +143,7 @@ VL_ATTR_COLD void Vtop___024root___dump_triggers__act(Vtop___024root* vlSelf) {
         VL_DBG_MSGF("         'act' region trigger index 0 is active: @(posedge clk)\n");
     }
     if ((2ULL & vlSelfRef.__VactTriggered.word(0U))) {
-        VL_DBG_MSGF("         'act' region trigger index 1 is active: @(posedge rst)\n");
+        VL_DBG_MSGF("         'act' region trigger index 1 is active: @(negedge rst_n)\n");
     }
 }
 #endif  // VL_DEBUG
@@ -148,7 +161,7 @@ VL_ATTR_COLD void Vtop___024root___dump_triggers__nba(Vtop___024root* vlSelf) {
         VL_DBG_MSGF("         'nba' region trigger index 0 is active: @(posedge clk)\n");
     }
     if ((2ULL & vlSelfRef.__VnbaTriggered.word(0U))) {
-        VL_DBG_MSGF("         'nba' region trigger index 1 is active: @(posedge rst)\n");
+        VL_DBG_MSGF("         'nba' region trigger index 1 is active: @(negedge rst_n)\n");
     }
 }
 #endif  // VL_DEBUG
@@ -159,13 +172,31 @@ VL_ATTR_COLD void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf) {
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     vlSelf->clk = VL_RAND_RESET_I(1);
-    vlSelf->rst = VL_RAND_RESET_I(1);
-    vlSelf->data_in = VL_RAND_RESET_I(8);
-    vlSelf->data_out = VL_RAND_RESET_I(8);
-    vlSelf->dummy__DOT__clk = VL_RAND_RESET_I(1);
-    vlSelf->dummy__DOT__rst = VL_RAND_RESET_I(1);
-    vlSelf->dummy__DOT__data_in = VL_RAND_RESET_I(8);
-    vlSelf->dummy__DOT__data_out = VL_RAND_RESET_I(8);
+    vlSelf->rst_n = VL_RAND_RESET_I(1);
+    vlSelf->psel = VL_RAND_RESET_I(1);
+    vlSelf->penable = VL_RAND_RESET_I(1);
+    vlSelf->pwrite = VL_RAND_RESET_I(1);
+    vlSelf->paddr = VL_RAND_RESET_I(32);
+    vlSelf->pwdata = VL_RAND_RESET_I(32);
+    vlSelf->prdata = VL_RAND_RESET_I(32);
+    vlSelf->pready = VL_RAND_RESET_I(1);
+    vlSelf->can_tx = VL_RAND_RESET_I(1);
+    vlSelf->can_rx = VL_RAND_RESET_I(1);
+    vlSelf->can_rx_error = VL_RAND_RESET_I(1);
+    vlSelf->can_tx_enable = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__clk = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__rst_n = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__psel = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__penable = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__pwrite = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__paddr = VL_RAND_RESET_I(32);
+    vlSelf->can_fd_ctrl__DOT__pwdata = VL_RAND_RESET_I(32);
+    vlSelf->can_fd_ctrl__DOT__prdata = VL_RAND_RESET_I(32);
+    vlSelf->can_fd_ctrl__DOT__pready = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__can_tx = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__can_rx = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__can_rx_error = VL_RAND_RESET_I(1);
+    vlSelf->can_fd_ctrl__DOT__can_tx_enable = VL_RAND_RESET_I(1);
     vlSelf->__Vtrigprevexpr___TOP__clk__0 = VL_RAND_RESET_I(1);
-    vlSelf->__Vtrigprevexpr___TOP__rst__0 = VL_RAND_RESET_I(1);
+    vlSelf->__Vtrigprevexpr___TOP__rst_n__0 = VL_RAND_RESET_I(1);
 }

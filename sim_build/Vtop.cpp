@@ -10,9 +10,18 @@ Vtop::Vtop(VerilatedContext* _vcontextp__, const char* _vcname__)
     : VerilatedModel{*_vcontextp__}
     , vlSymsp{new Vtop__Syms(contextp(), _vcname__, this)}
     , clk{vlSymsp->TOP.clk}
-    , rst{vlSymsp->TOP.rst}
-    , data_in{vlSymsp->TOP.data_in}
-    , data_out{vlSymsp->TOP.data_out}
+    , rst_n{vlSymsp->TOP.rst_n}
+    , psel{vlSymsp->TOP.psel}
+    , penable{vlSymsp->TOP.penable}
+    , pwrite{vlSymsp->TOP.pwrite}
+    , pready{vlSymsp->TOP.pready}
+    , can_tx{vlSymsp->TOP.can_tx}
+    , can_rx{vlSymsp->TOP.can_rx}
+    , can_rx_error{vlSymsp->TOP.can_rx_error}
+    , can_tx_enable{vlSymsp->TOP.can_tx_enable}
+    , paddr{vlSymsp->TOP.paddr}
+    , pwdata{vlSymsp->TOP.pwdata}
+    , prdata{vlSymsp->TOP.prdata}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

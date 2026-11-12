@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge
+from cocotb.triggers import RisingEdge
 from can_fd_reference import generate_can_fd_frame
 
 @cocotb.test()
@@ -20,10 +20,13 @@ async def test_apb3_read_stub(dut):
     dut.psel.value = 1
     dut.penable.value = 0
     dut.pwrite.value = 0
-    dut.paddr.value = 32'h00000000
+    dut.paddr.value = 0x00000000
     await RisingEdge(dut.clk)
     
     dut.penable.value = 1
+    await RisingEdge(dut.clk)
+    
+    # Ждём ещё один такт, чтобы pready обновился
     await RisingEdge(dut.clk)
     
     # Проверяем, что заглушка вернула наш тестовый паттерн

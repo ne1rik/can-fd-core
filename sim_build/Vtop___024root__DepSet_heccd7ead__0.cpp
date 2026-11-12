@@ -22,19 +22,13 @@ VL_INLINE_OPT void Vtop___024root___ico_sequent__TOP__0(Vtop___024root* vlSelf) 
     Vtop__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    vlSelfRef.can_fd_ctrl__DOT__clk = vlSelfRef.clk;
-    vlSelfRef.can_fd_ctrl__DOT__rst_n = vlSelfRef.rst_n;
-    vlSelfRef.can_fd_ctrl__DOT__psel = vlSelfRef.psel;
-    vlSelfRef.can_fd_ctrl__DOT__penable = vlSelfRef.penable;
-    vlSelfRef.can_fd_ctrl__DOT__pwrite = vlSelfRef.pwrite;
-    vlSelfRef.can_fd_ctrl__DOT__paddr = vlSelfRef.paddr;
-    vlSelfRef.can_fd_ctrl__DOT__pwdata = vlSelfRef.pwdata;
-    vlSelfRef.can_fd_ctrl__DOT__can_rx = vlSelfRef.can_rx;
-    vlSelfRef.can_fd_ctrl__DOT__can_rx_error = vlSelfRef.can_rx_error;
-    vlSelfRef.prdata = vlSelfRef.can_fd_ctrl__DOT__prdata;
-    vlSelfRef.pready = vlSelfRef.can_fd_ctrl__DOT__pready;
-    vlSelfRef.can_tx = vlSelfRef.can_fd_ctrl__DOT__can_tx;
-    vlSelfRef.can_tx_enable = vlSelfRef.can_fd_ctrl__DOT__can_tx_enable;
+    vlSelfRef.bit_stuffer__DOT__clk = vlSelfRef.clk;
+    vlSelfRef.bit_stuffer__DOT__rst_n = vlSelfRef.rst_n;
+    vlSelfRef.bit_stuffer__DOT__data_in = vlSelfRef.data_in;
+    vlSelfRef.bit_stuffer__DOT__data_in_valid = vlSelfRef.data_in_valid;
+    vlSelfRef.data_out = vlSelfRef.bit_stuffer__DOT__data_out;
+    vlSelfRef.data_out_valid = vlSelfRef.bit_stuffer__DOT__data_out_valid;
+    vlSelfRef.stuff_count = vlSelfRef.bit_stuffer__DOT__stuff_count;
 }
 
 void Vtop___024root___eval_triggers__ico(Vtop___024root* vlSelf);
@@ -76,21 +70,62 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtop___024root___nba_sequent__TOP__0\n"); );
     Vtop__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
+    // Init
+    CData/*2:0*/ __Vdly__bit_stuffer__DOT__consecutive_count;
+    __Vdly__bit_stuffer__DOT__consecutive_count = 0;
+    CData/*0:0*/ __Vdly__bit_stuffer__DOT__last_bit;
+    __Vdly__bit_stuffer__DOT__last_bit = 0;
     // Body
-    vlSelfRef.can_fd_ctrl__DOT__pready = ((IData)(vlSelfRef.rst_n) 
-                                          && ((IData)(vlSelfRef.psel) 
-                                              & (IData)(vlSelfRef.penable)));
+    __Vdly__bit_stuffer__DOT__consecutive_count = vlSelfRef.bit_stuffer__DOT__consecutive_count;
+    __Vdly__bit_stuffer__DOT__last_bit = vlSelfRef.bit_stuffer__DOT__last_bit;
     if (vlSelfRef.rst_n) {
-        if (((IData)(vlSelfRef.psel) & (IData)(vlSelfRef.penable))) {
-            if ((1U & (~ (IData)(vlSelfRef.pwrite)))) {
-                vlSelfRef.can_fd_ctrl__DOT__prdata = 0xdeadbeefU;
+        if (vlSelfRef.bit_stuffer__DOT__need_stuff_bit) {
+            vlSelfRef.bit_stuffer__DOT__stuff_count 
+                = (0xffU & ((IData)(1U) + (IData)(vlSelfRef.bit_stuffer__DOT__stuff_count)));
+            vlSelfRef.bit_stuffer__DOT__data_out = 
+                (1U & (~ (IData)(vlSelfRef.bit_stuffer__DOT__last_bit)));
+            vlSelfRef.bit_stuffer__DOT__data_out_valid = 1U;
+            __Vdly__bit_stuffer__DOT__consecutive_count = 1U;
+            vlSelfRef.bit_stuffer__DOT__need_stuff_bit = 0U;
+            __Vdly__bit_stuffer__DOT__last_bit = (1U 
+                                                  & (~ (IData)(vlSelfRef.bit_stuffer__DOT__last_bit)));
+        } else if (vlSelfRef.data_in_valid) {
+            vlSelfRef.bit_stuffer__DOT__data_out = vlSelfRef.data_in;
+            vlSelfRef.bit_stuffer__DOT__data_out_valid = 1U;
+            if (vlSelfRef.bit_stuffer__DOT__first_bit) {
+                __Vdly__bit_stuffer__DOT__last_bit 
+                    = vlSelfRef.data_in;
+                __Vdly__bit_stuffer__DOT__consecutive_count = 1U;
+                vlSelfRef.bit_stuffer__DOT__first_bit = 0U;
+            } else if (((IData)(vlSelfRef.data_in) 
+                        == (IData)(vlSelfRef.bit_stuffer__DOT__last_bit))) {
+                if ((4U == (IData)(vlSelfRef.bit_stuffer__DOT__consecutive_count))) {
+                    vlSelfRef.bit_stuffer__DOT__need_stuff_bit = 1U;
+                }
+                __Vdly__bit_stuffer__DOT__consecutive_count 
+                    = (7U & ((IData)(1U) + (IData)(vlSelfRef.bit_stuffer__DOT__consecutive_count)));
+            } else {
+                __Vdly__bit_stuffer__DOT__last_bit 
+                    = vlSelfRef.data_in;
+                __Vdly__bit_stuffer__DOT__consecutive_count = 1U;
             }
+        } else {
+            vlSelfRef.bit_stuffer__DOT__data_out_valid = 0U;
         }
     } else {
-        vlSelfRef.can_fd_ctrl__DOT__prdata = 0U;
+        vlSelfRef.bit_stuffer__DOT__stuff_count = 0U;
+        __Vdly__bit_stuffer__DOT__last_bit = 0U;
+        vlSelfRef.bit_stuffer__DOT__data_out = 1U;
+        vlSelfRef.bit_stuffer__DOT__data_out_valid = 0U;
+        __Vdly__bit_stuffer__DOT__consecutive_count = 0U;
+        vlSelfRef.bit_stuffer__DOT__need_stuff_bit = 0U;
+        vlSelfRef.bit_stuffer__DOT__first_bit = 1U;
     }
-    vlSelfRef.pready = vlSelfRef.can_fd_ctrl__DOT__pready;
-    vlSelfRef.prdata = vlSelfRef.can_fd_ctrl__DOT__prdata;
+    vlSelfRef.bit_stuffer__DOT__consecutive_count = __Vdly__bit_stuffer__DOT__consecutive_count;
+    vlSelfRef.bit_stuffer__DOT__last_bit = __Vdly__bit_stuffer__DOT__last_bit;
+    vlSelfRef.stuff_count = vlSelfRef.bit_stuffer__DOT__stuff_count;
+    vlSelfRef.data_out = vlSelfRef.bit_stuffer__DOT__data_out;
+    vlSelfRef.data_out_valid = vlSelfRef.bit_stuffer__DOT__data_out_valid;
 }
 
 void Vtop___024root___eval_triggers__act(Vtop___024root* vlSelf);
@@ -156,7 +191,7 @@ void Vtop___024root___eval(Vtop___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vtop___024root___dump_triggers__ico(vlSelf);
 #endif
-            VL_FATAL_MT("/root/can-fd-core/rtl/can_fd_ctrl.sv", 3, "", "Input combinational region did not converge.");
+            VL_FATAL_MT("/root/can-fd-core/rtl/bit_stuffer.sv", 3, "", "Input combinational region did not converge.");
         }
         __VicoIterCount = ((IData)(1U) + __VicoIterCount);
         __VicoContinue = 0U;
@@ -172,7 +207,7 @@ void Vtop___024root___eval(Vtop___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vtop___024root___dump_triggers__nba(vlSelf);
 #endif
-            VL_FATAL_MT("/root/can-fd-core/rtl/can_fd_ctrl.sv", 3, "", "NBA region did not converge.");
+            VL_FATAL_MT("/root/can-fd-core/rtl/bit_stuffer.sv", 3, "", "NBA region did not converge.");
         }
         __VnbaIterCount = ((IData)(1U) + __VnbaIterCount);
         __VnbaContinue = 0U;
@@ -183,7 +218,7 @@ void Vtop___024root___eval(Vtop___024root* vlSelf) {
 #ifdef VL_DEBUG
                 Vtop___024root___dump_triggers__act(vlSelf);
 #endif
-                VL_FATAL_MT("/root/can-fd-core/rtl/can_fd_ctrl.sv", 3, "", "Active region did not converge.");
+                VL_FATAL_MT("/root/can-fd-core/rtl/bit_stuffer.sv", 3, "", "Active region did not converge.");
             }
             vlSelfRef.__VactIterCount = ((IData)(1U) 
                                          + vlSelfRef.__VactIterCount);
@@ -208,15 +243,9 @@ void Vtop___024root___eval_debug_assertions(Vtop___024root* vlSelf) {
         Verilated::overWidthError("clk");}
     if (VL_UNLIKELY(((vlSelfRef.rst_n & 0xfeU)))) {
         Verilated::overWidthError("rst_n");}
-    if (VL_UNLIKELY(((vlSelfRef.psel & 0xfeU)))) {
-        Verilated::overWidthError("psel");}
-    if (VL_UNLIKELY(((vlSelfRef.penable & 0xfeU)))) {
-        Verilated::overWidthError("penable");}
-    if (VL_UNLIKELY(((vlSelfRef.pwrite & 0xfeU)))) {
-        Verilated::overWidthError("pwrite");}
-    if (VL_UNLIKELY(((vlSelfRef.can_rx & 0xfeU)))) {
-        Verilated::overWidthError("can_rx");}
-    if (VL_UNLIKELY(((vlSelfRef.can_rx_error & 0xfeU)))) {
-        Verilated::overWidthError("can_rx_error");}
+    if (VL_UNLIKELY(((vlSelfRef.data_in & 0xfeU)))) {
+        Verilated::overWidthError("data_in");}
+    if (VL_UNLIKELY(((vlSelfRef.data_in_valid & 0xfeU)))) {
+        Verilated::overWidthError("data_in_valid");}
 }
 #endif  // VL_DEBUG

@@ -1,7 +1,7 @@
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_ctrl.sv $(PWD)/rtl/bit_stuffer.sv
-TOPLEVEL = bit_stuffer
-COCOTB_TEST_MODULES = tb.test_bit_stuffer
+VERILOG_SOURCES = $(PWD)/rtl/bit_stuffer.sv $(PWD)/rtl/crc17_canfd.sv
+TOPLEVEL = crc17_canfd
+COCOTB_TEST_MODULES = tb.test_crc17
 SIM ?= verilator
 
 export PYTHONPATH := $(PWD)/tb:$(PYTHONPATH)

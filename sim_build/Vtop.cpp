@@ -13,9 +13,8 @@ Vtop::Vtop(VerilatedContext* _vcontextp__, const char* _vcname__)
     , rst_n{vlSymsp->TOP.rst_n}
     , data_in{vlSymsp->TOP.data_in}
     , data_in_valid{vlSymsp->TOP.data_in_valid}
-    , data_out{vlSymsp->TOP.data_out}
-    , data_out_valid{vlSymsp->TOP.data_out_valid}
-    , stuff_count{vlSymsp->TOP.stuff_count}
+    , crc_reset{vlSymsp->TOP.crc_reset}
+    , crc_out{vlSymsp->TOP.crc_out}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

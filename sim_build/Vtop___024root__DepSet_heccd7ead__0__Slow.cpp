@@ -47,7 +47,7 @@ VL_ATTR_COLD void Vtop___024root___eval_settle(Vtop___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vtop___024root___dump_triggers__stl(vlSelf);
 #endif
-            VL_FATAL_MT("/root/can-fd-core/rtl/bit_stuffer.sv", 3, "", "Settle region did not converge.");
+            VL_FATAL_MT("/root/can-fd-core/rtl/crc17_canfd.sv", 3, "", "Settle region did not converge.");
         }
         __VstlIterCount = ((IData)(1U) + __VstlIterCount);
         __VstlContinue = 0U;
@@ -162,20 +162,16 @@ VL_ATTR_COLD void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf) {
     vlSelf->rst_n = VL_RAND_RESET_I(1);
     vlSelf->data_in = VL_RAND_RESET_I(1);
     vlSelf->data_in_valid = VL_RAND_RESET_I(1);
-    vlSelf->data_out = VL_RAND_RESET_I(1);
-    vlSelf->data_out_valid = VL_RAND_RESET_I(1);
-    vlSelf->stuff_count = VL_RAND_RESET_I(8);
-    vlSelf->bit_stuffer__DOT__clk = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__rst_n = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__data_in = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__data_in_valid = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__data_out = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__data_out_valid = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__stuff_count = VL_RAND_RESET_I(8);
-    vlSelf->bit_stuffer__DOT__consecutive_count = VL_RAND_RESET_I(3);
-    vlSelf->bit_stuffer__DOT__last_bit = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__need_stuff_bit = VL_RAND_RESET_I(1);
-    vlSelf->bit_stuffer__DOT__first_bit = VL_RAND_RESET_I(1);
+    vlSelf->crc_reset = VL_RAND_RESET_I(1);
+    vlSelf->crc_out = VL_RAND_RESET_I(17);
+    vlSelf->crc17_canfd__DOT__clk = VL_RAND_RESET_I(1);
+    vlSelf->crc17_canfd__DOT__rst_n = VL_RAND_RESET_I(1);
+    vlSelf->crc17_canfd__DOT__data_in = VL_RAND_RESET_I(1);
+    vlSelf->crc17_canfd__DOT__data_in_valid = VL_RAND_RESET_I(1);
+    vlSelf->crc17_canfd__DOT__crc_reset = VL_RAND_RESET_I(1);
+    vlSelf->crc17_canfd__DOT__crc_out = VL_RAND_RESET_I(17);
+    vlSelf->crc17_canfd__DOT__crc_reg = VL_RAND_RESET_I(17);
+    vlSelf->crc17_canfd__DOT__shifted = VL_RAND_RESET_I(17);
     vlSelf->__Vtrigprevexpr___TOP__clk__0 = VL_RAND_RESET_I(1);
     vlSelf->__Vtrigprevexpr___TOP__rst_n__0 = VL_RAND_RESET_I(1);
 }

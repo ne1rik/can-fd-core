@@ -18,25 +18,21 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     VL_IN8(rst_n,0,0);
     VL_IN8(data_in,0,0);
     VL_IN8(data_in_valid,0,0);
-    VL_OUT8(data_out,0,0);
-    VL_OUT8(data_out_valid,0,0);
-    VL_OUT8(stuff_count,7,0);
-    CData/*0:0*/ bit_stuffer__DOT__clk;
-    CData/*0:0*/ bit_stuffer__DOT__rst_n;
-    CData/*0:0*/ bit_stuffer__DOT__data_in;
-    CData/*0:0*/ bit_stuffer__DOT__data_in_valid;
-    CData/*0:0*/ bit_stuffer__DOT__data_out;
-    CData/*0:0*/ bit_stuffer__DOT__data_out_valid;
-    CData/*7:0*/ bit_stuffer__DOT__stuff_count;
-    CData/*2:0*/ bit_stuffer__DOT__consecutive_count;
-    CData/*0:0*/ bit_stuffer__DOT__last_bit;
-    CData/*0:0*/ bit_stuffer__DOT__need_stuff_bit;
-    CData/*0:0*/ bit_stuffer__DOT__first_bit;
+    VL_IN8(crc_reset,0,0);
+    CData/*0:0*/ crc17_canfd__DOT__clk;
+    CData/*0:0*/ crc17_canfd__DOT__rst_n;
+    CData/*0:0*/ crc17_canfd__DOT__data_in;
+    CData/*0:0*/ crc17_canfd__DOT__data_in_valid;
+    CData/*0:0*/ crc17_canfd__DOT__crc_reset;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
     CData/*0:0*/ __Vtrigprevexpr___TOP__rst_n__0;
     CData/*0:0*/ __VactContinue;
+    VL_OUT(crc_out,16,0);
+    IData/*16:0*/ crc17_canfd__DOT__crc_out;
+    IData/*16:0*/ crc17_canfd__DOT__crc_reg;
+    IData/*16:0*/ crc17_canfd__DOT__shifted;
     IData/*31:0*/ __VactIterCount;
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
@@ -45,6 +41,10 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
 
     // INTERNAL VARIABLES
     Vtop__Syms* const vlSymsp;
+
+    // PARAMETERS
+    static constexpr IData/*16:0*/ crc17_canfd__DOT__POLY = 0x0001685bU;
+    static constexpr IData/*16:0*/ crc17_canfd__DOT__MASK = 0x0001ffffU;
 
     // CONSTRUCTORS
     Vtop___024root(Vtop__Syms* symsp, const char* v__name);

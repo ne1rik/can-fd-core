@@ -6,6 +6,11 @@
 #include "Vtop__Syms.h"
 #include "Vtop___024root.h"
 
+// Parameter definitions for Vtop___024root
+constexpr IData/*16:0*/ Vtop___024root::crc17_canfd__DOT__POLY;
+constexpr IData/*16:0*/ Vtop___024root::crc17_canfd__DOT__MASK;
+
+
 void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf);
 
 Vtop___024root::Vtop___024root(Vtop__Syms* symsp, const char* v__name)

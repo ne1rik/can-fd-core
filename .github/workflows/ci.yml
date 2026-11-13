@@ -16,7 +16,18 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y verilator make g++
+          sudo apt-get install -y make g++ wget
+          
+      - name: Install OSS CAD Suite (Verilator 5.055+)
+        run: |
+          cd /tmp
+          wget -q https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-09-19/oss-cad-suite-linux-x64-20240919.tgz
+          tar -xzf oss-cad-suite-linux-x64-20240919.tgz
+          echo "/tmp/oss-cad-suite/bin" >> $GITHUB_PATH
+          
+      - name: Verify Verilator version
+        run: |
+          verilator --version
           
       - name: Install Python dependencies
         run: |

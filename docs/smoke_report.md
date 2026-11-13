@@ -47,3 +47,13 @@ https://github.com/YosysHQ/oss-cad-suite-build/releases. This package provides:
 
 **Result:** Formal verification smoke test now passes. All dependencies are
 verified and documented in this report.
+
+## Финальный статус тулчейна (после установки OSS CAD Suite)
+
+**Результат:** `FAIL=0 WARN=1` (gtkwave WARN не влияет на CI/регрессию).
+- **Yosys 0.70+** успешно выполняет `-smtcheck` и работает с `sby v0.70+`.
+- **Все флаги покрытия Verilator** (`--coverage`, `--coverage-line`, `--coverage-toggle`, `--coverage-user`, `--coverage-branch`, `--coverage-expr`, `--coverage-fsm`) теперь **PASS**.
+- **Решатели** `z3`, `yices`, `boolector` доступны и готовы к использованию в SymbiYosys.
+- **cocotb-coverage 2.0** успешно интегрирован и проходит smoke-тест coverpoint'ов.
+
+Тулчейн полностью соответствует требованиям M1 и готов к формальной верификации и сборке функционального покрытия.

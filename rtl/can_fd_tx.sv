@@ -4,7 +4,7 @@ module can_fd_tx (
     input  wire         tx_start,
     input  wire [10:0]  tx_id,
     input  wire [3:0]   tx_dlc,
-    input  wire [511:0] tx_data,   // byte0 = [511:504], MSB-first, left-aligned
+    input  wire [511:0] tx_data,   // <-- ПЛОСКИЙ 512-БИТНЫЙ ВЕКТОР
     input  wire         tx_brs,
     output reg          tx_bit,
     output reg          tx_bit_valid,
@@ -13,7 +13,7 @@ module can_fd_tx (
 );
     localparam IDLE=0,F_RAW=1,F_STUFF=2,F_FSB1=3,F_SC=4,F_CRC=5,F_TAIL=6,F_SHIFT=7,DONE=8;
     reg [3:0] state;
-    reg [10:0] id_reg; reg [3:0] dlc_reg; reg [511:0] data_reg; reg brs_reg;
+    reg [10:0] id_reg; reg [3:0] dlc_reg; reg [511:0] data_reg; reg brs_reg; // <-- ПЛОСКИЙ РЕГИСТР
     reg frame_buf [0:1023];
     reg [9:0] wr_len, rd_idx;
     reg [9:0] raw_idx;
@@ -69,7 +69,7 @@ module can_fd_tx (
                 default:raw_bit=1'b0;
             endcase
         end
-        else raw_bit=data_reg[9'd511-di];
+        else raw_bit=data_reg[9'd511-di]; // <-- ЧТЕНИЕ ИЗ ПЛОСКОГО ВЕКТОРА
     end
 
     always @(posedge clk or negedge rst_n) begin
@@ -82,7 +82,7 @@ module can_fd_tx (
             tx_bit_valid<=1'b0;
             case (state)
                 IDLE: if (tx_start) begin
-                    id_reg<=tx_id; dlc_reg<=tx_dlc; data_reg<=tx_data; brs_reg<=tx_brs;
+                    id_reg<=tx_id; dlc_reg<=tx_dlc; data_reg<=tx_data; brs_reg<=tx_brs; // <-- ПРЯМОЕ ПРИСВАИВАНИЕ
                     wr_len<=0; raw_idx<=0; run_cnt<=0; dyn<=0;
                     crc_reg<=(tx_dlc>=13)?21'h100000:21'h010000;
                     state<=F_RAW;

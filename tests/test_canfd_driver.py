@@ -1,73 +1,51 @@
-"""Unit tests for CANFDDriver BRS-aware timing logic."""
+"""Unit tests for BRS-aware bit timing (no simulator required)."""
+
 import pytest
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from canfd_kit.bus.canfd_bus import CANFDDriver
-from can_fd_reference import generate_can_fd_frame
+from can_fd_reference import generate_can_fd_frame_ex
 
-class MockSignal:
+
+class _Sig:
     def __init__(self):
         self.value = 1
-        self.timings = []
 
-    def set(self, val):
-        self.value = val
 
-class MockDUT:
+class _Dut:
     def __init__(self):
-        self.rx = MockSignal()
-        self.tx = MockSignal()
+        self.rx = _Sig()
+        self.tx = _Sig()
+
+
+async def _capture_times(frame, brs_index, brs_enabled, arb, data):
+    drv = CANFDDriver(_Dut(), "tx", "rx")
+    times = []
+
+    async def fake_send_bit(bit, bit_time_ns):
+        times.append(bit_time_ns)
+
+    drv.send_bit = fake_send_bit
+    await drv.send_frame(frame, brs_index, brs_enabled,
+                         arb_time_ns=arb, data_time_ns=data)
+    return times
+
 
 @pytest.mark.asyncio
-async def test_driver_brs_timing_switch():
-    """Проверяем, что драйвер переключает скорость при BRS=1, учитывая сдвиг из-за стаффинга."""
-    mock_dut = MockDUT()
-    driver = CANFDDriver(mock_dut, tx_signal='tx', rx_signal='rx')
-    
-    arb_time = 2000.0
-    data_time = 500.0
-    
-    # Кадр с BRS=1 (генерирует стафф-бит перед BRS для ID=0x123)
-    frame_brs1, brs_idx = generate_can_fd_frame(0x123, 9, [0xAA] * 12, brs=True)
-    
-    captured_times = []
-    async def mock_send_bit(bit: int, bit_time_ns: float):
-        captured_times.append(bit_time_ns)
-    
-    driver.send_bit = mock_send_bit
-    await driver.send_frame(frame_brs1, brs_index=brs_idx, brs_enabled=True, 
-                            arb_time_ns=arb_time, data_time_ns=data_time)
-    
-    assert len(captured_times) == len(frame_brs1), "Количество битов не совпадает"
-    
-    # Биты ДО и ВКЛЮЧАЯ brs_idx идут на арбитражной скорости
-    for i in range(brs_idx + 1):
-        assert captured_times[i] == arb_time, f"Бит {i} должен быть {arb_time}, получен {captured_times[i]}"
-        
-    # Биты ПОСЛЕ brs_idx идут на скорости данных
-    for i in range(brs_idx + 1, len(frame_brs1)):
-        assert captured_times[i] == data_time, f"Бит {i} должен быть {data_time}, получен {captured_times[i]}"
+async def test_brs_switches_after_brs_bit():
+    arb, data = 2000.0, 500.0
+    frame, bi = generate_can_fd_frame_ex(0x123, 9, [0xAA] * 12, True)
+    times = await _capture_times(frame, bi, True, arb, data)
+
+    assert len(times) == len(frame)
+    assert all(t == arb for t in times[:bi + 1]), "bits up to BRS must use arb rate"
+    assert all(t == data for t in times[bi + 1:]), "bits after BRS must use data rate"
+
 
 @pytest.mark.asyncio
-async def test_driver_no_brs_timing():
-    """Проверяем, что при BRS=0 весь кадр идет на арбитражной скорости."""
-    mock_dut = MockDUT()
-    driver = CANFDDriver(mock_dut, tx_signal='tx', rx_signal='rx')
-    
-    arb_time = 2000.0
-    data_time = 500.0
-    
-    frame_brs0, brs_idx = generate_can_fd_frame(0x123, 9, [0xAA] * 12, brs=False)
-    
-    captured_times = []
-    async def mock_send_bit(bit: int, bit_time_ns: float):
-        captured_times.append(bit_time_ns)
-    
-    driver.send_bit = mock_send_bit
-    await driver.send_frame(frame_brs0, brs_index=brs_idx, brs_enabled=False, 
-                            arb_time_ns=arb_time, data_time_ns=data_time)
-    
-    for i in range(len(frame_brs0)):
-        assert captured_times[i] == arb_time, f"Бит {i} должен быть {arb_time}, получен {captured_times[i]}"
+async def test_no_brs_keeps_arbitration_rate():
+    arb, data = 2000.0, 500.0
+    frame, bi = generate_can_fd_frame_ex(0x123, 9, [0xAA] * 12, False)
+    times = await _capture_times(frame, bi, False, arb, data)
+
+    assert len(times) == len(frame)
+    assert all(t == arb for t in times), "BRS=0 must keep the whole frame at arb rate"

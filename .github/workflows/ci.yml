@@ -21,9 +21,21 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install cocotb pytest
+          pip install cocotb pytest pytest-asyncio cocotb-coverage
           
-      - name: Run Cocotb tests
+      - name: Clean build artifacts
+        run: |
+          rm -rf sim_build sim_build_aux
+          
+      - name: Run Cocotb tests (TX regression)
         run: make
         env:
-          PYTHONPATH: ${{ github.workspace }}/tb:${{ env.PYTHONPATH }}
+          PYTHONPATH: ${{ github.workspace }}/tb:${{ github.workspace }}:${{ env.PYTHONPATH }}
+          
+      - name: Run Cocotb tests (APB3 stub + reference anchors)
+        run: make -f Makefile.aux
+        env:
+          PYTHONPATH: ${{ github.workspace }}/tb:${{ github.workspace }}:${{ env.PYTHONPATH }}
+          
+      - name: Run pytest (kit import + driver tests)
+        run: PYTHONPATH=.:tb pytest tests/ -v

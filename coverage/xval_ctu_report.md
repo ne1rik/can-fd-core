@@ -16,3 +16,8 @@ In-scope vectors: 2,542.
 
 ## Claim
 "Our kit generates and validates CAN FD frames with **bit-exact waveform conformance** to the CTU CAN FD silicon-proven reference, modulo the receiver-driven ACK slot."
+
+## Extended ID (FEFF, 29-bit) Conformance
+The same bit-exact methodology was applied to 29-bit extended frames.
+Result: **101/101 frames** in dataset 1 show `ACK_ONLY_DIFF`.
+Our FEFF header layout (SOF + 11-bit Base + SRR + IDE + 18-bit Ext + RRS + FDF + res + BRS + ESI + DLC) matches the silicon-proven CTU reference perfectly, including dynamic stuffing, SBC, CRC, and FSB.

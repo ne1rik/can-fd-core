@@ -1,19 +1,24 @@
-"""ISO 11898-1:2015 CAN FD reference model (FBFF, 11-bit ID).
+"""ISO 11898-1:2015 CAN FD reference model.
 
-Two CRC conventions coexist here on purpose:
-  * calculate_crc()        -> pure catalogue algorithm, init = 0
-                              (used by test_crc17 / test_crc21)
-  * frame-level CRC        -> init = MSB set, computed over the dynamically
-                              stuffed stream PLUS the 4-bit stuff count
-                              (used by generate_can_fd_frame)
+Formats: FBFF (11-bit ID, default) and FEFF (29-bit ID, extended=True).
 
-Frame boundary = end of EOF. The tail is 10 bits:
-CRC delimiter + ACK slot + ACK delimiter + EOF x 7. No IFS is appended.
+Two CRC conventions coexist on purpose:
+  * calculate_crc()  -> catalogue algorithm, init = 0 (test_crc17 / test_crc21)
+  * frame-level CRC  -> init = MSB set, over the dynamically stuffed stream
+                        PLUS the 4-bit stuff count
+
+Frame boundary = end of EOF. Tail is 10 bits:
+CRC delimiter + ACK slot + ACK delimiter + EOF x 7. No IFS appended.
+The ACK slot is emitted recessive: this is the transmitter view. A receiver
+drives it dominant on a real bus (verified against CTU waveforms).
 """
 
-# BRS position in the UNSTUFFED frame:
-# SOF(1) + ID(11) + RRS,IDE,FDF,res(4) = 16
-BRS_RAW_INDEX = 16
+# BRS position in the UNSTUFFED header
+BRS_RAW_INDEX = 16       # FBFF: SOF(1) + ID(11) + RRS,IDE,FDF,res(4)
+BRS_RAW_INDEX_EXT = 35   # FEFF: SOF(1) + IDA(11) + SRR,IDE(2) + IDB(18) + RRS,FDF,res(3)
+
+HEADER_LEN = 22          # FBFF: 16 + BRS,ESI(2) + DLC(4)
+HEADER_LEN_EXT = 41      # FEFF: 35 + BRS,ESI(2) + DLC(4)
 
 
 def dlc_len(d):
@@ -25,7 +30,7 @@ def dlc_len(d):
 def stuff_bits(bits):
     """Dynamic bit stuffing. The inserted bit starts the next run.
 
-    Returns (stuffed_bits, positions) where positions is a list of
+    Returns (stuffed_bits, positions) with positions as
     (raw_index, stuffed_index, stuff_bit).
     """
     out, pos = [], []
@@ -44,105 +49,56 @@ def stuff_bits(bits):
     return out, pos
 
 
-def calculate_crc(bitstream, payload_len_bytes):
-    """Pure catalogue CRC (init = 0). Kept for algorithm-level tests."""
-    w, poly = (21, 0x102899) if payload_len_bytes > 16 else (17, 0x1685B)
-    m = (1 << w) - 1
-    c = 0
-    for b in bitstream:
-        msb = (c >> (w - 1)) & 1
-        c = (c << 1) & m
-        if msb ^ b:
-            c ^= poly
-    return [(c >> i) & 1 for i in range(w - 1, -1, -1)]
-
-
-def _crc_val(bits, w, poly, init):
-    m = (1 << w) - 1
-    c = init & m
+def _crc_val(bits, width, poly, init):
+    """Bit-serial CRC, feedback = MSB xor data_bit, shift in zero."""
+    mask = (1 << width) - 1
+    crc = init
     for b in bits:
-        msb = (c >> (w - 1)) & 1
-        c = (c << 1) & m
-        if msb ^ b:
-            c ^= poly
-    return c
+        fb = ((crc >> (width - 1)) & 1) ^ b
+        crc = (crc << 1) & mask
+        if fb:
+            crc ^= poly
+    return crc
+
+
+def calculate_crc(bitstream, payload_len_bytes):
+    """Catalogue CRC (init = 0). Returns CRC bits, MSB first."""
+    w, poly = (21, 0x102899) if payload_len_bytes > 16 else (17, 0x1685B)
+    v = _crc_val(bitstream, w, poly, 0)
+    return [(v >> i) & 1 for i in range(w - 1, -1, -1)]
 
 
 def _gray_sc(n):
-    """Stuff count: 3-bit Gray code of (n mod 8) + even parity, MSB first."""
-    n &= 7
-    g = n ^ (n >> 1)
-    p = ((g >> 2) ^ (g >> 1) ^ g) & 1
-    return [(g >> 2) & 1, (g >> 1) & 1, g & 1, p]
+    """Stuff count: 3-bit Gray of (n mod 8), MSB first, + even parity bit."""
+    g = (n % 8) ^ ((n % 8) >> 1)
+    bits = [(g >> i) & 1 for i in (2, 1, 0)]
+    bits.append(sum(bits) % 2)
+    return bits
 
 
-def _raw_of(fid, dlc, data, brs):
-    r = [0]
-    r += [(fid >> i) & 1 for i in range(10, -1, -1)]
-    r += [0, 0, 1, 0, 1 if brs else 0, 0]   # RRS,IDE,FDF,res,BRS,ESI
-    r += [(dlc >> i) & 1 for i in range(3, -1, -1)]
-    for by in data:
-        r += [(by >> i) & 1 for i in range(7, -1, -1)]
+def _raw_of(fid, dlc, data, brs, extended=False):
+    """Unstuffed header + payload (no CRC, no tail)."""
+    n = dlc_len(dlc)
+    r = [0]                                   # SOF
+    if extended:
+        r += [(fid >> i) & 1 for i in range(28, 17, -1)]   # ID A[28:18]
+        r += [1, 1]                                        # SRR, IDE
+        r += [(fid >> i) & 1 for i in range(17, -1, -1)]   # ID B[17:0]
+        r += [0, 1, 0]                                     # RRS, FDF, res
+    else:
+        r += [(fid >> i) & 1 for i in range(10, -1, -1)]   # ID[10:0]
+        r += [0, 0, 1, 0]                                  # RRS, IDE, FDF, res
+    r += [1 if brs else 0, 0]                              # BRS, ESI
+    r += [(dlc >> i) & 1 for i in range(3, -1, -1)]        # DLC
+    for k in range(n):
+        v = data[k] if k < len(data) else 0
+        r += [(v >> i) & 1 for i in range(7, -1, -1)]
     return r
 
 
-def generate_can_fd_frame_ex(fid, dlc, data, brs=True):
-    """Build a full ISO frame. Returns (bits, brs_index_in_stuffed_stream)."""
-    raw = _raw_of(fid, dlc, data, brs)
-    st, pos = stuff_bits(raw)
-
-    # If the last dynamic stuff bit is triggered by the last raw bit, it
-    # becomes the first fixed stuff bit of the CRC field.
-    boundary = bool(pos) and pos[-1][0] == len(raw) - 1
-    if boundary:
-        fsb = st[-1]
-        st = st[:-1]
-        pos = pos[:-1]
-    else:
-        fsb = None
-
-    sc = _gray_sc(len(pos))
-    w, poly = (21, 0x102899) if dlc_len(dlc) > 16 else (17, 0x1685B)
-    crc = _crc_val(st + sc, w, poly, 1 << (w - 1))
-    cb = [(crc >> i) & 1 for i in range(w - 1, -1, -1)]
-
-    # CRC field: leading FSB, then (SC + CRC) with an FSB before each
-    # subsequent 4-bit group. Fixed stuff bits are NOT part of the CRC input.
-    field = [fsb if boundary else 1 - (st[-1] if st else 0)]
-    seq = sc + cb
-    i = 0
-    while i < len(seq):
-        g = seq[i:i + 4]
-        field += g
-        i += 4
-        if i < len(seq):
-            field.append(1 - g[-1])
-
-    bits = st + field + [1, 1, 1] + [1] * 7
-    shift = sum(1 for (ri, _si, _sb) in pos if ri < BRS_RAW_INDEX)
-    return bits, BRS_RAW_INDEX + shift
-
-
-def generate_can_fd_frame(fid, dlc, data, brs=True):
-    """Build a full ISO frame, returning only the bit list."""
-    return generate_can_fd_frame_ex(fid, dlc, data, brs)[0]
-
-
-if __name__ == "__main__":
-    for name, fid, dlc, data in [("anchor 5AA/8/FF*8", 0x5AA, 8, [0xFF] * 8),
-                                 ("123/9/AA*12", 0x123, 9, [0xAA] * 12),
-                                 ("123/9/00*12", 0x123, 9, [0x00] * 12)]:
-        bits, bi = generate_can_fd_frame_ex(fid, dlc, data, True)
-        print(f"{name:22s} len={len(bits):4d} brs_index={bi}")
-
-
-def frame_layout(fid, dlc, data, brs=True):
-    """Full frame decomposition with bit indices, for checkers and injectors.
-
-    Mirrors generate_can_fd_frame_ex. tests/test_model_conformance.py asserts
-    that layout['bits'] == generate_can_fd_frame(...) so the two cannot drift.
-    """
-    raw = _raw_of(fid, dlc, data, brs)
+def _build(fid, dlc, data, brs, extended=False):
+    """Full frame decomposition with bit indices."""
+    raw = _raw_of(fid, dlc, data, brs, extended)
     st, pos = stuff_bits(raw)
 
     boundary = bool(pos) and pos[-1][0] == len(raw) - 1
@@ -154,7 +110,8 @@ def frame_layout(fid, dlc, data, brs=True):
         fsb = None
 
     sc = _gray_sc(len(pos))
-    w, poly = (21, 0x102899) if dlc_len(dlc) > 16 else (17, 0x1685B)
+    n = dlc_len(dlc)
+    w, poly = (21, 0x102899) if n > 16 else (17, 0x1685B)
     crc = _crc_val(st + sc, w, poly, 1 << (w - 1))
     cb = [(crc >> i) & 1 for i in range(w - 1, -1, -1)]
 
@@ -171,14 +128,15 @@ def frame_layout(fid, dlc, data, brs=True):
             field.append(1 - g[-1])
 
     bits = st + field + [1, 1, 1] + [1] * 7
-    shift = sum(1 for (ri, _si, _sb) in pos if ri < BRS_RAW_INDEX)
+    brs_raw = BRS_RAW_INDEX_EXT if extended else BRS_RAW_INDEX
+    shift = sum(1 for (ri, _si, _sb) in pos if ri < brs_raw)
 
     seq_off = [k for k in range(len(field)) if k not in set(fsb_off)]
     base = len(st)
 
     return {
         "bits": bits,
-        "brs_index": BRS_RAW_INDEX + shift,
+        "brs_index": brs_raw + shift,
         "raw_len": len(raw),
         "dyn_count": len(pos),
         "dyn_stuff_indices": [si for (_ri, si, _sb) in pos],
@@ -194,5 +152,23 @@ def frame_layout(fid, dlc, data, brs=True):
         "crc_width": w,
         "crc_value": crc,
         "stuff_count_bits": sc,
-        "payload_bytes": dlc_len(dlc),
+        "payload_bytes": n,
+        "extended": extended,
+        "header_len": HEADER_LEN_EXT if extended else HEADER_LEN,
     }
+
+
+def frame_layout(fid, dlc, data, brs=True, extended=False):
+    """Full frame decomposition. Mirrors generate_can_fd_frame_ex exactly."""
+    return _build(fid, dlc, data, brs, extended)
+
+
+def generate_can_fd_frame_ex(fid, dlc, data, brs=True, extended=False):
+    """Returns (bits, brs_index_in_stuffed_stream)."""
+    lay = _build(fid, dlc, data, brs, extended)
+    return lay["bits"], lay["brs_index"]
+
+
+def generate_can_fd_frame(fid, dlc, data, brs=True, extended=False):
+    """Complete stuffed CAN FD frame, transmitter view (ACK recessive)."""
+    return _build(fid, dlc, data, brs, extended)["bits"]

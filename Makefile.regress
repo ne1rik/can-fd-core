@@ -1,18 +1,19 @@
-# One command, full regression.
-.PHONY: all unit tx aux loopback inject
-all: unit tx aux loopback inject
+.PHONY: all unit tx aux loopback inject cov_tx cov_inject cov_merge
+all: unit tx aux loopback inject cov_tx cov_inject cov_merge
 
 unit:
 PYTHONPATH=.:tb pytest tests/ -v
-
 tx:
 $(MAKE) -f Makefile
-
 aux:
 $(MAKE) -f Makefile.aux
-
 loopback:
 $(MAKE) -f Makefile.loopback
-
 inject:
 $(MAKE) -f Makefile.inject
+cov_tx:
+$(MAKE) -f Makefile.coverage
+cov_inject:
+$(MAKE) -f Makefile.coverage_inject
+cov_merge:
+PYTHONPATH=.:tb python3 scripts/coverage_merge.py --min 95

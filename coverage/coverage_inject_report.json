@@ -1,0 +1,158 @@
+{
+  "crosses": {
+    "dlc_x_brs": {
+      "covered": 32,
+      "expected": 32,
+      "illegal_hits": 0,
+      "percentage": 100.0
+    },
+    "error_x_dlc": {
+      "covered": 79,
+      "expected": 79,
+      "illegal_hits": 0,
+      "percentage": 100.0
+    },
+    "id_x_pattern": {
+      "covered": 1,
+      "expected": 25,
+      "illegal_hits": 0,
+      "percentage": 4.0
+    }
+  },
+  "crosses_pct": 82.4,
+  "groups": {
+    "brs": {
+      "bins": {
+        "0": 79,
+        "1": 79
+      },
+      "covered": 2,
+      "percentage": 100.0,
+      "total": 2
+    },
+    "crc_width": {
+      "bins": {
+        "17": 108,
+        "21": 50
+      },
+      "covered": 2,
+      "percentage": 100.0,
+      "total": 2
+    },
+    "data_pattern": {
+      "bins": {
+        "alternating": 0,
+        "ones": 0,
+        "ramp": 0,
+        "random": 0,
+        "zeros": 158
+      },
+      "covered": 1,
+      "percentage": 20.0,
+      "total": 5
+    },
+    "dlc": {
+      "bins": {
+        "0": 8,
+        "1": 10,
+        "10": 10,
+        "11": 10,
+        "12": 10,
+        "13": 10,
+        "14": 10,
+        "15": 10,
+        "2": 10,
+        "3": 10,
+        "4": 10,
+        "5": 10,
+        "6": 10,
+        "7": 10,
+        "8": 10,
+        "9": 10
+      },
+      "covered": 16,
+      "percentage": 100.0,
+      "total": 16
+    },
+    "error_type": {
+      "bins": {
+        "crc_flip": 32,
+        "none": 32,
+        "payload_flip": 30,
+        "sc_flip": 32,
+        "stuff_flip": 32
+      },
+      "covered": 5,
+      "percentage": 100.0,
+      "total": 5
+    },
+    "id_range": {
+      "bins": {
+        "0x000": 158,
+        "0x001-0x1FF": 0,
+        "0x200-0x3FF": 0,
+        "0x400-0x5FF": 0,
+        "0x600-0x7FF": 0
+      },
+      "covered": 1,
+      "percentage": 20.0,
+      "total": 5
+    },
+    "stuff_density": {
+      "bins": {
+        "high": 70,
+        "low": 23,
+        "medium": 65,
+        "none": 0
+      },
+      "covered": 3,
+      "percentage": 75.0,
+      "total": 4
+    }
+  },
+  "overall": 81.1,
+  "points": 76.9,
+  "uncovered": {
+    "data_pattern": [
+      "ones",
+      "alternating",
+      "ramp",
+      "random"
+    ],
+    "id_range": [
+      "0x001-0x1FF",
+      "0x200-0x3FF",
+      "0x400-0x5FF",
+      "0x600-0x7FF"
+    ],
+    "id_x_pattern": [
+      "0x000 x ones",
+      "0x000 x alternating",
+      "0x000 x ramp",
+      "0x000 x random",
+      "0x001-0x1FF x zeros",
+      "0x001-0x1FF x ones",
+      "0x001-0x1FF x alternating",
+      "0x001-0x1FF x ramp",
+      "0x001-0x1FF x random",
+      "0x200-0x3FF x zeros",
+      "0x200-0x3FF x ones",
+      "0x200-0x3FF x alternating",
+      "0x200-0x3FF x ramp",
+      "0x200-0x3FF x random",
+      "0x400-0x5FF x zeros",
+      "0x400-0x5FF x ones",
+      "0x400-0x5FF x alternating",
+      "0x400-0x5FF x ramp",
+      "0x400-0x5FF x random",
+      "0x600-0x7FF x zeros",
+      "0x600-0x7FF x ones",
+      "0x600-0x7FF x alternating",
+      "0x600-0x7FF x ramp",
+      "0x600-0x7FF x random"
+    ],
+    "stuff_density": [
+      "none"
+    ]
+  }
+}

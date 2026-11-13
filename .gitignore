@@ -1,8 +1,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-sim_build/
-sim_build_aux/
+sim_build*/
 results.xml
 *.vcd
 *.fst

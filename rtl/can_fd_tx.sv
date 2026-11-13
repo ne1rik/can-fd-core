@@ -22,7 +22,7 @@ module can_fd_tx (
     reg [20:0] crc_reg, crc_final;
     reg [1:0] sc_idx; reg [4:0] crc_idx; reg [2:0] grp; reg [3:0] tail_idx;
 
-    wire is_crc21 = (dlc_reg>=4'd13);
+    wire is_crc21 = (dlc_reg>=4'd11);
     wire [4:0] cw   = is_crc21 ? 5'd21 : 5'd17;
     wire [20:0] poly  = is_crc21 ? 21'h102899 : 21'h1685B;
     wire [20:0] cmask = is_crc21 ? 21'h1FFFFF : 21'h1FFFF;
@@ -84,7 +84,7 @@ module can_fd_tx (
                 IDLE: if (tx_start) begin
                     id_reg<=tx_id; dlc_reg<=tx_dlc; data_reg<=tx_data; brs_reg<=tx_brs;
                     wr_len<=0; raw_idx<=0; run_cnt<=0; dyn<=0;
-                    crc_reg<=(tx_dlc>=13)?21'h100000:21'h010000;
+                    crc_reg<=(tx_dlc>=4'd11)?21'h100000:21'h010000;
                     state<=F_RAW;
                 end
                 

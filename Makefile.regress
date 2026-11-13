@@ -1,0 +1,18 @@
+# One command, full regression.
+.PHONY: all unit tx aux loopback inject
+all: unit tx aux loopback inject
+
+unit:
+PYTHONPATH=.:tb pytest tests/ -v
+
+tx:
+$(MAKE) -f Makefile
+
+aux:
+$(MAKE) -f Makefile.aux
+
+loopback:
+$(MAKE) -f Makefile.loopback
+
+inject:
+$(MAKE) -f Makefile.inject

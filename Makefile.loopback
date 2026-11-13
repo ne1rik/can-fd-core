@@ -3,7 +3,7 @@ SIM ?= verilator
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback.sv
 TOPLEVEL = can_fd_loopback
-COCOTB_TEST_MODULES = tests.test_loopback,tests.test_loopback_extended
+COCOTB_TEST_MODULES = tests.test_loopback,tests.test_loopback_extended,tests.test_loopback_sweep,tests.test_loopback_comprehensive
 SIM_BUILD = $(PWD)/sim_build_loopback
 
 export PYTHONPATH := $(PWD)/tb:$(PWD):$(PYTHONPATH)

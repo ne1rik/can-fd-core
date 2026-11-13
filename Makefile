@@ -3,7 +3,7 @@ SIM ?= verilator
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv
 TOPLEVEL = can_fd_tx
-COCOTB_TEST_MODULES = tb.test_can_fd_tx,tests.test_canfd_tx_integration
+COCOTB_TEST_MODULES = tb.test_can_fd_tx,tests.test_canfd_tx_integration,tests.test_tx_sweep
 SIM_BUILD = $(PWD)/sim_build_tx
 
 export PYTHONPATH := $(PWD)/tb:$(PWD):$(PYTHONPATH)

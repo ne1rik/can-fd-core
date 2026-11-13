@@ -134,3 +134,65 @@ if __name__ == "__main__":
                                  ("123/9/00*12", 0x123, 9, [0x00] * 12)]:
         bits, bi = generate_can_fd_frame_ex(fid, dlc, data, True)
         print(f"{name:22s} len={len(bits):4d} brs_index={bi}")
+
+
+def frame_layout(fid, dlc, data, brs=True):
+    """Full frame decomposition with bit indices, for checkers and injectors.
+
+    Mirrors generate_can_fd_frame_ex. tests/test_model_conformance.py asserts
+    that layout['bits'] == generate_can_fd_frame(...) so the two cannot drift.
+    """
+    raw = _raw_of(fid, dlc, data, brs)
+    st, pos = stuff_bits(raw)
+
+    boundary = bool(pos) and pos[-1][0] == len(raw) - 1
+    if boundary:
+        fsb = st[-1]
+        st = st[:-1]
+        pos = pos[:-1]
+    else:
+        fsb = None
+
+    sc = _gray_sc(len(pos))
+    w, poly = (21, 0x102899) if dlc_len(dlc) > 16 else (17, 0x1685B)
+    crc = _crc_val(st + sc, w, poly, 1 << (w - 1))
+    cb = [(crc >> i) & 1 for i in range(w - 1, -1, -1)]
+
+    field = [fsb if boundary else 1 - (st[-1] if st else 0)]
+    fsb_off = [0]
+    seq = sc + cb
+    i = 0
+    while i < len(seq):
+        g = seq[i:i + 4]
+        field += g
+        i += 4
+        if i < len(seq):
+            fsb_off.append(len(field))
+            field.append(1 - g[-1])
+
+    bits = st + field + [1, 1, 1] + [1] * 7
+    shift = sum(1 for (ri, _si, _sb) in pos if ri < BRS_RAW_INDEX)
+
+    seq_off = [k for k in range(len(field)) if k not in set(fsb_off)]
+    base = len(st)
+
+    return {
+        "bits": bits,
+        "brs_index": BRS_RAW_INDEX + shift,
+        "raw_len": len(raw),
+        "dyn_count": len(pos),
+        "dyn_stuff_indices": [si for (_ri, si, _sb) in pos],
+        "boundary_fsb": boundary,
+        "stuffed_data_len": base,
+        "crc_field_start": base,
+        "crc_field_len": len(field),
+        "fsb_indices": [base + k for k in fsb_off],
+        "sc_indices": [base + k for k in seq_off[:4]],
+        "crc_bit_indices": [base + k for k in seq_off[4:4 + w]],
+        "tail_start": base + len(field),
+        "tail_len": 10,
+        "crc_width": w,
+        "crc_value": crc,
+        "stuff_count_bits": sc,
+        "payload_bytes": dlc_len(dlc),
+    }

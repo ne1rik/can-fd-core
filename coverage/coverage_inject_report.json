@@ -12,19 +12,25 @@
       "illegal_hits": 0,
       "percentage": 100.0
     },
-    "id_x_pattern": {
-      "covered": 1,
+    "fault_x_pattern": {
+      "covered": 25,
       "expected": 25,
       "illegal_hits": 0,
-      "percentage": 4.0
+      "percentage": 100.0
+    },
+    "id_x_pattern": {
+      "covered": 10,
+      "expected": 25,
+      "illegal_hits": 0,
+      "percentage": 40.0
     }
   },
-  "crosses_pct": 82.4,
+  "crosses_pct": 90.7,
   "groups": {
     "brs": {
       "bins": {
-        "0": 79,
-        "1": 79
+        "0": 104,
+        "1": 104
       },
       "covered": 2,
       "percentage": 100.0,
@@ -32,7 +38,7 @@
     },
     "crc_width": {
       "bins": {
-        "17": 108,
+        "17": 158,
         "21": 50
       },
       "covered": 2,
@@ -41,14 +47,14 @@
     },
     "data_pattern": {
       "bins": {
-        "alternating": 0,
-        "ones": 0,
-        "ramp": 0,
-        "random": 0,
-        "zeros": 158
+        "alternating": 10,
+        "ones": 10,
+        "ramp": 10,
+        "random": 10,
+        "zeros": 168
       },
-      "covered": 1,
-      "percentage": 20.0,
+      "covered": 5,
+      "percentage": 100.0,
       "total": 5
     },
     "dlc": {
@@ -67,7 +73,7 @@
         "5": 10,
         "6": 10,
         "7": 10,
-        "8": 10,
+        "8": 60,
         "9": 10
       },
       "covered": 16,
@@ -76,11 +82,11 @@
     },
     "error_type": {
       "bins": {
-        "crc_flip": 32,
-        "none": 32,
-        "payload_flip": 30,
-        "sc_flip": 32,
-        "stuff_flip": 32
+        "crc_flip": 42,
+        "none": 42,
+        "payload_flip": 40,
+        "sc_flip": 42,
+        "stuff_flip": 42
       },
       "covered": 5,
       "percentage": 100.0,
@@ -88,53 +94,37 @@
     },
     "id_range": {
       "bins": {
-        "0x000": 158,
-        "0x001-0x1FF": 0,
+        "0x000": 168,
+        "0x001-0x1FF": 40,
         "0x200-0x3FF": 0,
         "0x400-0x5FF": 0,
         "0x600-0x7FF": 0
       },
-      "covered": 1,
-      "percentage": 20.0,
+      "covered": 2,
+      "percentage": 40.0,
       "total": 5
     },
     "stuff_density": {
       "bins": {
         "high": 70,
-        "low": 23,
-        "medium": 65,
-        "none": 0
+        "low": 35,
+        "medium": 95,
+        "none": 8
       },
-      "covered": 3,
-      "percentage": 75.0,
+      "covered": 4,
+      "percentage": 100.0,
       "total": 4
     }
   },
-  "overall": 81.1,
-  "points": 76.9,
+  "overall": 91.0,
+  "points": 92.3,
   "uncovered": {
-    "data_pattern": [
-      "ones",
-      "alternating",
-      "ramp",
-      "random"
-    ],
     "id_range": [
-      "0x001-0x1FF",
       "0x200-0x3FF",
       "0x400-0x5FF",
       "0x600-0x7FF"
     ],
     "id_x_pattern": [
-      "0x000 x ones",
-      "0x000 x alternating",
-      "0x000 x ramp",
-      "0x000 x random",
-      "0x001-0x1FF x zeros",
-      "0x001-0x1FF x ones",
-      "0x001-0x1FF x alternating",
-      "0x001-0x1FF x ramp",
-      "0x001-0x1FF x random",
       "0x200-0x3FF x zeros",
       "0x200-0x3FF x ones",
       "0x200-0x3FF x alternating",
@@ -150,9 +140,6 @@
       "0x600-0x7FF x alternating",
       "0x600-0x7FF x ramp",
       "0x600-0x7FF x random"
-    ],
-    "stuff_density": [
-      "none"
     ]
   }
 }

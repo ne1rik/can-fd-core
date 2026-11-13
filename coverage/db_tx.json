@@ -52,6 +52,13 @@
       "none|8": 57,
       "none|9": 9
     },
+    "fault_x_pattern": {
+      "none|alternating": 24,
+      "none|ones": 26,
+      "none|ramp": 51,
+      "none|random": 42,
+      "none|zeros": 37
+    },
     "id_x_pattern": {
       "0x000|alternating": 1,
       "0x000|ones": 1,

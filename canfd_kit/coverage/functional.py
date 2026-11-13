@@ -153,12 +153,16 @@ class CANFDCoverage:
             "error_x_dlc", "Fault type x DLC", self.error_type, self.dlc,
             illegal=(("payload_flip", "0"),))
 
+        self.cross_fault_pattern = CoverageCross(
+            "fault_x_pattern", "Fault type x payload pattern",
+            self.error_type, self.data_pattern)
+
         # dlc_x_crc intentionally absent: DLC determines CRC width by ISO
         # (0..10 -> CRC-17, 11..15 -> CRC-21). 16 of 32 cells are dead.
 
         self.groups = [self.dlc, self.brs, self.crc_width, self.data_pattern,
                        self.id_range, self.stuff_density, self.error_type]
-        self.crosses = [self.cross_dlc_brs, self.cross_id_pattern, self.cross_error_dlc]
+        self.crosses = [self.cross_dlc_brs, self.cross_id_pattern, self.cross_error_dlc, self.cross_fault_pattern]
 
     # ---------- classification ----------
 
@@ -217,6 +221,7 @@ class CANFDCoverage:
         self.cross_dlc_brs.sample(dlc, int(brs))
         self.cross_id_pattern.sample(idb, pat)
         self.cross_error_dlc.sample(error, dlc)
+        self.cross_fault_pattern.sample(error, pat)
 
     # ---------- persistence ----------
 

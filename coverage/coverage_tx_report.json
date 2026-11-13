@@ -12,6 +12,12 @@
       "illegal_hits": 0,
       "percentage": 20.3
     },
+    "fault_x_pattern": {
+      "covered": 5,
+      "expected": 25,
+      "illegal_hits": 0,
+      "percentage": 20.0
+    },
     "id_x_pattern": {
       "covered": 25,
       "expected": 25,
@@ -19,7 +25,7 @@
       "percentage": 100.0
     }
   },
-  "crosses_pct": 53.7,
+  "crosses_pct": 48.4,
   "groups": {
     "brs": {
       "bins": {
@@ -110,7 +116,7 @@
       "total": 4
     }
   },
-  "overall": 61.7,
+  "overall": 56.5,
   "points": 89.7,
   "uncovered": {
     "error_type": [
@@ -183,6 +189,28 @@
       "sc_flip x 13",
       "sc_flip x 14",
       "sc_flip x 15"
+    ],
+    "fault_x_pattern": [
+      "payload_flip x zeros",
+      "payload_flip x ones",
+      "payload_flip x alternating",
+      "payload_flip x ramp",
+      "payload_flip x random",
+      "crc_flip x zeros",
+      "crc_flip x ones",
+      "crc_flip x alternating",
+      "crc_flip x ramp",
+      "crc_flip x random",
+      "stuff_flip x zeros",
+      "stuff_flip x ones",
+      "stuff_flip x alternating",
+      "stuff_flip x ramp",
+      "stuff_flip x random",
+      "sc_flip x zeros",
+      "sc_flip x ones",
+      "sc_flip x alternating",
+      "sc_flip x ramp",
+      "sc_flip x random"
     ]
   }
 }

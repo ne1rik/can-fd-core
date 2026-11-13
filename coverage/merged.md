@@ -21,6 +21,7 @@
 | dlc_x_brs | 32 | 32 | 100.0% |
 | id_x_pattern | 25 | 25 | 100.0% |
 | error_x_dlc | 79 | 79 | 100.0% |
+| fault_x_pattern | 25 | 25 | 100.0% |
 
 ## Uncovered
 

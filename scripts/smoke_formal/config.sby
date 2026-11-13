@@ -1,0 +1,13 @@
+[options]
+mode prove
+depth 10
+
+[engines]
+smtbmc
+
+[script]
+read -formal smoke_formal.sv
+prep -top smoke_formal
+
+[files]
+smoke_formal.sv

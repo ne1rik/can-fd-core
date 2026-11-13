@@ -1,0 +1,14 @@
+SBY 14:07:40 [smoke_formal] Removing directory '/root/can-fd-core/scripts/smoke_formal'.
+SBY 14:07:40 [smoke_formal] Copy '/root/can-fd-core/scripts/smoke_formal.sv' to '/root/can-fd-core/scripts/smoke_formal/src/smoke_formal.sv'.
+SBY 14:07:40 [smoke_formal] engine_0: smtbmc
+SBY 14:07:40 [smoke_formal] base: starting process "cd smoke_formal/src; yosys -ql ../model/design.log ../model/design.ys"
+SBY 14:07:40 [smoke_formal] base: ERROR: Command syntax error: Unknown option or option in arguments.
+SBY 14:07:40 [smoke_formal] base: > hierarchy -smtcheck
+SBY 14:07:40 [smoke_formal] base: >           ^
+SBY 14:07:40 [smoke_formal] base: finished (returncode=1)
+SBY 14:07:40 [smoke_formal] base: task failed. ERROR.
+SBY 14:07:40 [smoke_formal] summary: Elapsed clock time [H:MM:SS (secs)]: 0:00:00 (0)
+SBY 14:07:40 [smoke_formal] summary: Elapsed process time [H:MM:SS (secs)]: 0:00:00 (0)
+SBY 14:07:40 [smoke_formal] summary: engine_0 (smtbmc) did not return a status
+SBY 14:07:40 [smoke_formal] summary: engine_0 did not produce any traces
+SBY 14:07:40 [smoke_formal] DONE (ERROR, rc=16)

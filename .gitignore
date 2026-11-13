@@ -1,7 +1,14 @@
 __pycache__/
 *.pyc
+.pytest_cache/
 sim_build/
+sim_build_aux/
 results.xml
 *.vcd
 *.fst
+*.log
 venv/
+.venv/
+coverage.dat
+*.dat
+scripts/smoke_formal_work/

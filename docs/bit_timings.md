@@ -1,59 +1,46 @@
-# Бит-тайминги CAN FD контроллера
+# CAN FD bit timing — DUT #1 / bus model reference
 
-## Базовые параметры
-- **Частота ядра:** 80 МГц
-- **Период tq (time quantum):** 12.5 нс
-- **Prescaler:** 1 (tq = 12.5 нс)
+Core clock: **80 MHz** (mtq = 12.5 ns). All values below are checked for
+legality: `SJW <= TSEG2`, `TSEG2 >= 1`, exact target bit rate.
 
-## Формулы
+## Verified configuration
+
+| Phase | Rate | BRP | tq | N (tq/bit) | SYNC | TSEG1 | TSEG2 | SJW | Sample point |
+|---|---|---|---|---|---|---|---|---|---|
+| Arbitration | 500 kbit/s | 2 | 25.0 ns | 80 | 1 | 63 | 16 | 4 | 80.00 % |
+| Data (target) | 2 Mbit/s | 1 | 12.5 ns | 40 | 1 | 31 | 8 | 4 | 80.00 % |
+| Data (max) | 5 Mbit/s | 1 | 12.5 ns | 16 | 1 | 12 | 3 | 3 | 81.25 % |
+
+`N = 1 + TSEG1 + TSEG2`, `tq = BRP / f_core`, `sample_point = (1 + TSEG1) / N`.
+
+Rate check: `80e6 / (2 * 80) = 500e3`, `80e6 / (1 * 40) = 2e6`, `80e6 / (1 * 16) = 5e6`.
+
+## Legality rules enforced by the bus model
+
+1. `SJW <= TSEG2` (the previous revision violated this at 5 Mbit/s: SJW=4, TSEG2=3).
+2. `TSEG1 >= 1`, `TSEG2 >= 1`, SYNC is always 1 tq.
+3. `N * tq` must equal the target bit time exactly (no rounding drift).
+4. Register field widths are DUT-specific and must be checked by the adapter,
+   not assumed by the bus model.
+
+## Transmitter delay compensation (TDC / SSP)
+
+The secondary sample point is measured **from the start of the transmitted bit**:
+
 ```
-Bit_Time (в секундах) = 1 / Baud_Rate
-Bit_Time (в tq) = Bit_Time / tq
-Структура бита = Sync_Seg + Prop_Seg + Phase_Seg1 + Phase_Seg2
-Точка выборки = (Sync_Seg + Prop_Seg + Phase_Seg1) / Bit_Time
+SSP = TDCV + TDCO
 ```
 
-## Режим 1: Арбитраж 500 кбит/с
-| Параметр | Значение (tq) | Комментарий |
-|----------|---------------|-------------|
-| Sync_Seg | 1 | Стандартное значение |
-| Prop_Seg + Phase_Seg1 | 120 | 75% точка выборки |
-| Phase_Seg2 | 39 | 24.375% |
-| SJW | 4 | Sync Jump Width |
-| **Total** | **160** | Проверка: 2000 нс / 12.5 нс = 160 tq |
-| **Точка выборки** | **75.625%** | (1 + 120) / 160 |
+* `TDCV` — measured loop delay (transceiver + bus), in mtq. In simulation the
+  default is `TDCV = 0` (no transceiver model); it is a per-node knob.
+* `TDCO` — configured offset, in mtq. Recommended starting value equals the
+  data-phase sample-point position:
+  * 2 Mbit/s: `(1 + 31) = 32 tq = 32 mtq`
+  * 5 Mbit/s: `(1 + 12) = 13 tq = 13 mtq`
 
-## Режим 2: Данные 2 Мбит/с (цель)
-| Параметр | Значение (tq) | Комментарий |
-|----------|---------------|-------------|
-| Sync_Seg | 1 | Стандартное значение |
-| Prop_Seg + Phase_Seg1 | 30 | 75% точка выборки |
-| Phase_Seg2 | 9 | 22.5% |
-| SJW | 4 | Sync Jump Width |
-| **Total** | **40** | Проверка: 500 нс / 12.5 нс = 40 tq |
-| **Точка выборки** | **77.5%** | (1 + 30) / 40 |
-| **TDC_Offset** | **2** | Компенсация задержки передатчика |
-| **SSP** | **32** | Secondary Sampling Point: 30 + 2 |
+The earlier revision of this file used `SSP = Prop_Seg + Phase_Seg1 + TDC_Offset`,
+which is **not** the ISO definition and has been removed.
 
-## Режим 3: Данные 5 Мбит/с (максимум)
-| Параметр | Значение (tq) | Комментарий |
-|----------|---------------|-------------|
-| Sync_Seg | 1 | Стандартное значение |
-| Prop_Seg + Phase_Seg1 | 12 | 75% точка выборки |
-| Phase_Seg2 | 3 | 18.75% |
-| SJW | 4 | Sync Jump Width |
-| **Total** | **16** | Проверка: 200 нс / 12.5 нс = 16 tq |
-| **Точка выборки** | **81.25%** | (1 + 12) / 16 |
-| **TDC_Offset** | **3** | Компенсация задержки передатчика |
-| **SSP** | **15** | Secondary Sampling Point: 12 + 3 |
-
-## Примечания
-- Все точки выборки находятся в диапазоне 75-87.5%, что соответствует рекомендациям ISO 11898-1
-- Для скоростей > 2 Мбит/с активна компенсация TDC (Transmitter Delay Compensation)
-- SJW = 4 tq обеспечивает достаточный запас для ресинхронизации при разбросе тактовых генераторов
-- Prescaler = 1 выбран для максимального разрешения бит-тайминга (16 tq на бит при 5 Мбит/с)
-
-## Проверка расчётов
-- 500 кбит/с: 80 МГц / 160 tq = 500 кбит/с ✓
-- 2 Мбит/с: 80 МГц / 40 tq = 2 Мбит/с ✓
-- 5 Мбит/с: 80 МГц / 16 tq = 5 Мбит/с ✓
+> Open item: the exact TDCV/TDCO quantisation and enable threshold must be
+> cross-checked against CTU CAN FD documentation before the kit claims
+> conformance. Tracked in the M1 report.

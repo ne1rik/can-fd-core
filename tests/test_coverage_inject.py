@@ -1,8 +1,9 @@
-"""Fault-injection coverage with varied dimensions.
+"""Fault-injection coverage with full dimension coverage.
 
-Two sweeps:
-  * fault x DLC            (error_x_dlc)   — payload fixed to zeros/ID 0x000
-  * fault x data_pattern   (fault_x_pattern) — pattern and ID varied per fault
+Three sweeps:
+  * fault x DLC            (error_x_dlc)       — payload zeros / ID 0x000
+  * fault x data_pattern   (fault_x_pattern)   — pattern varied per fault
+  * fault x ID range       (id_x_pattern)      — ID from each bucket, all patterns
 
 stuff_flip uses ID 0x000 so the header always contains long zero runs and a
 dynamic stuff bit exists for every payload pattern. payload_flip needs DLC>0.
@@ -27,6 +28,9 @@ PATTERNS = {
     "ramp":        lambda n: [i & 0xFF for i in range(n)],
     "random":      lambda n: [(i * 17 + 42) & 0xFF for i in range(n)],
 }
+
+# One ID from each bucket
+ID_BUCKETS = [0x000, 0x100, 0x300, 0x500, 0x700]
 
 
 async def _reset(dut):
@@ -55,7 +59,7 @@ def _target(lay, fault):
     if fault == "none":
         return None
     if fault == "payload_flip":
-        return lay["stuffed_data_len"] - 1     # always the last payload bit
+        return lay["stuffed_data_len"] - 1
     if fault == "crc_flip":
         return lay["crc_bit_indices"][len(lay["crc_bit_indices"]) // 2]
     if fault == "sc_flip":
@@ -126,16 +130,16 @@ async def test_cov_fault_dlc_sweep(dut):
 
 @cocotb.test()
 async def test_cov_fault_pattern_sweep(dut):
-    """fault_x_pattern: vary payload pattern and ID for every fault type."""
+    """fault_x_pattern: vary payload pattern for every fault type."""
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     await _reset(dut)
     count = 0
     for pname, gen in PATTERNS.items():
         for fault in FAULTS:
             if fault == "stuff_flip":
-                fid, dlc = 0x000, 8       # header zero-runs guarantee stuff bits
+                fid, dlc = 0x000, 8
             elif fault == "payload_flip":
-                fid, dlc = 0x123, 8       # needs a payload
+                fid, dlc = 0x123, 8
             else:
                 fid, dlc = 0x123, 8
             data = gen(dlc_len(dlc))
@@ -143,6 +147,30 @@ async def test_cov_fault_pattern_sweep(dut):
                 await _case(dut, fid, dlc, data, brs, fault)
                 count += 1
     cocotb.log.info("fault x pattern sweep: %d frames", count)
+
+
+@cocotb.test()
+async def test_cov_fault_id_sweep(dut):
+    """id_x_pattern: vary ID from each bucket AND all patterns for every fault."""
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    await _reset(dut)
+    count = 0
+    for fid in ID_BUCKETS:
+        for pname, gen in PATTERNS.items():
+            for fault in FAULTS:
+                if fault == "stuff_flip":
+                    dlc = 8
+                    data = [0x00] * dlc_len(dlc)
+                elif fault == "payload_flip":
+                    dlc = 8
+                    data = gen(dlc_len(dlc))
+                else:
+                    dlc = 8
+                    data = gen(dlc_len(dlc))
+                for brs in (False, True):
+                    await _case(dut, fid, dlc, data, brs, fault)
+                    count += 1
+    cocotb.log.info("fault x ID sweep: %d frames", count)
 
 
 @cocotb.test()
@@ -161,6 +189,7 @@ async def test_cov_inject_report(dut):
 
     assert COVERAGE.error_type.covered_bins == COVERAGE.error_type.total_bins
     assert COVERAGE.cross_error_dlc.percentage == 100.0
-    assert COVERAGE.cross_fault_pattern.percentage == 100.0, \
-        f"fault_x_pattern {COVERAGE.cross_fault_pattern.covered_bins}/{COVERAGE.cross_fault_pattern.expected_bins}"
+    assert COVERAGE.cross_fault_pattern.percentage == 100.0
+    assert COVERAGE.cross_id_pattern.percentage == 100.0, \
+        f"id_x_pattern {COVERAGE.cross_id_pattern.covered_bins}/{COVERAGE.cross_id_pattern.expected_bins}"
     assert COVERAGE.cross_error_dlc.illegal_hits == 0

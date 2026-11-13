@@ -19,9 +19,9 @@ class CANFDDriver:
         self.rx.value = bit
         await Timer(bit_time_ns, units='ns')
 
-    async def send_frame(self, bitstream: list[int], arb_time_ns: float = 25.0, data_time_ns: float = 12.5):
+    async def send_frame(self, bitstream: list[int], arb_time_ns: float = 2000.0, data_time_ns: float = 500.0):
         """Send a full pre-stuffed bitstream, handling BRS timing switch."""
-        # TODO: Implement BRS-aware timing switch in M2.2
+        # M2.2: Implement BRS-aware timing switch here
         for bit in bitstream:
             await self.send_bit(bit, arb_time_ns)
 
@@ -33,8 +33,8 @@ class CANFDMonitor:
         self.rx = getattr(dut, rx_signal)
         self.received_frames = []
 
-    @cocotb.coroutine
     async def sniff(self, timeout_ns: float = 10000.0):
         """Continuously monitor the bus for SOF (dominant 0)."""
-        # TODO: Implement edge detection and frame reconstruction in M2.3
+        # M2.3: Implement edge detection and frame reconstruction here.
+        # Note: @cocotb.coroutine was removed in cocotb 2.x. Use plain async def.
         pass

@@ -1,7 +1,15 @@
 `timescale 1ns/1ps
 module can_fd_rx #(
     parameter int EXTENDED = 0,
-    parameter int CLASSIC  = 0
+    parameter int CLASSIC  = 0,
+    parameter int NBT_PRESCALER = 1,
+    parameter int NBT_TSEG1     = 0,
+    parameter int NBT_TSEG2     = 0,
+    parameter int DBT_PRESCALER = 1,
+    parameter int DBT_TSEG1     = 0,
+    parameter int DBT_TSEG2     = 0,
+    parameter int SSP_OFFSET    = 0,
+    parameter int CLK_PERIOD_NS = 10
 )(
     input  wire         clk, rst_n,
     input  wire         rx_bit,
@@ -16,6 +24,31 @@ module can_fd_rx #(
 );
     wire is_ext = (EXTENDED != 0);
     wire is_cls = (CLASSIC != 0);
+
+    wire [15:0] bt_bit_time_ns;
+    wire        bt_sample_en;
+    wire        bt_bit_boundary;
+    wire        bt_phase;
+    wire [7:0]  bt_ssp_cycles;
+    wire        bt_ssp_sample_en;
+
+    wire rx_sample_strobe = bt_phase ? bt_ssp_sample_en : bt_sample_en;
+
+    can_bit_timing #(
+        .NBT_PRESCALER(NBT_PRESCALER), .NBT_TSEG1(NBT_TSEG1), .NBT_TSEG2(NBT_TSEG2),
+        .DBT_PRESCALER(DBT_PRESCALER), .DBT_TSEG1(DBT_TSEG1), .DBT_TSEG2(DBT_TSEG2),
+        .SSP_OFFSET(SSP_OFFSET), .CLK_PERIOD_NS(CLK_PERIOD_NS)
+    ) u_timing (
+        .clk(clk), .rst_n(rst_n),
+        .brs_active(brs_seen),
+        .sync_edge((state == IDLE) && (rx_bit == 1'b0)),
+        .current_bit_time_ns(bt_bit_time_ns),
+        .sample_en(bt_sample_en),
+        .bit_boundary(bt_bit_boundary),
+        .phase(bt_phase),
+        .ssp_offset_cycles(bt_ssp_cycles),
+        .ssp_sample_en(bt_ssp_sample_en)
+    );
 
     localparam IDLE=4'd0, DYN=4'd1, CRC_LEAD=4'd2, CRC_SEQ=4'd3,
                TAIL=4'd4, DONE=4'd5, CRC_READ=4'd6;
@@ -120,7 +153,7 @@ module can_fd_rx #(
             crc_rx <= 21'd0; crc15_rx <= 15'd0;
             seq_idx <= 5'd0; grp_cnt <= 3'd0; tail_idx <= 4'd0; crc15_idx <= 4'd0;
             rx_id <= 29'd0; rx_dlc <= 4'd0; rx_data <= 512'd0;
-        end else begin
+        end else if (rx_sample_strobe) begin
             rx_done  <= 1'b0;
             rx_valid <= 1'b0;
 

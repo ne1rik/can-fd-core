@@ -1,7 +1,15 @@
 `timescale 1ns/1ps
 module can_fd_loopback #(
     parameter int EXTENDED = 0,
-    parameter int CLASSIC  = 0
+    parameter int CLASSIC  = 0,
+    parameter int NBT_PRESCALER = 1,
+    parameter int NBT_TSEG1     = 0,
+    parameter int NBT_TSEG2     = 0,
+    parameter int DBT_PRESCALER = 1,
+    parameter int DBT_TSEG1     = 0,
+    parameter int DBT_TSEG2     = 0,
+    parameter int SSP_OFFSET    = 0,
+    parameter int CLK_PERIOD_NS = 10
 )(
     input  wire         clk, rst_n,
     input  wire         tx_start,
@@ -25,7 +33,12 @@ module can_fd_loopback #(
     wire tx_bit_w, tx_vld_w, tx_done_w, tx_busy_w, rx_ack_w;
     wire bus_wire;
 
-    can_fd_tx #(.EXTENDED(EXTENDED), .CLASSIC(CLASSIC)) u_tx (
+    can_fd_tx #(
+        .NBT_PRESCALER(NBT_PRESCALER), .NBT_TSEG1(NBT_TSEG1), .NBT_TSEG2(NBT_TSEG2),
+        .DBT_PRESCALER(DBT_PRESCALER), .DBT_TSEG1(DBT_TSEG1), .DBT_TSEG2(DBT_TSEG2),
+        .SSP_OFFSET(SSP_OFFSET), .CLK_PERIOD_NS(CLK_PERIOD_NS),
+        .EXTENDED(EXTENDED), .CLASSIC(CLASSIC)
+    ) u_tx (
         .clk(clk), .rst_n(rst_n),
         .tx_start(tx_start), .tx_id(tx_id), .tx_dlc(tx_dlc),
         .tx_data(tx_data), .tx_brs(tx_brs),
@@ -35,7 +48,12 @@ module can_fd_loopback #(
 
     assign bus_wire = tx_bit_w & rx_ack_w;
 
-    can_fd_rx #(.EXTENDED(EXTENDED), .CLASSIC(CLASSIC)) u_rx (
+    can_fd_rx #(
+        .NBT_PRESCALER(NBT_PRESCALER), .NBT_TSEG1(NBT_TSEG1), .NBT_TSEG2(NBT_TSEG2),
+        .DBT_PRESCALER(DBT_PRESCALER), .DBT_TSEG1(DBT_TSEG1), .DBT_TSEG2(DBT_TSEG2),
+        .SSP_OFFSET(SSP_OFFSET), .CLK_PERIOD_NS(CLK_PERIOD_NS),
+        .EXTENDED(EXTENDED), .CLASSIC(CLASSIC)
+    ) u_rx (
         .clk(clk), .rst_n(rst_n),
         .rx_bit(bus_wire), .rx_ack(rx_ack_w),
         .rx_id(rx_id), .rx_dlc(rx_dlc), .rx_data(rx_data),

@@ -6,9 +6,16 @@ CLASSIC  ?= 0
 XVAL_SHARD ?= 0
 XVAL_SHARDS ?= 1
 XVAL_LIMIT ?= 0
+NBT_PRESCALER ?= 1
+NBT_TSEG1 ?= 0
+NBT_TSEG2 ?= 0
+DBT_PRESCALER ?= 1
+DBT_TSEG1 ?= 0
+DBT_TSEG2 ?= 0
+SSP_OFFSET ?= 0
 CASE_IDX ?=
 
-export EXTENDED CLASSIC XVAL_SHARD XVAL_SHARDS XVAL_LIMIT CASE_IDX
+export EXTENDED CLASSIC XVAL_SHARD XVAL_SHARDS XVAL_LIMIT CASE_IDX NBT_PRESCALER NBT_TSEG1 NBT_TSEG2 DBT_PRESCALER DBT_TSEG1 DBT_TSEG2 SSP_OFFSET
 export PYTHONPATH := $(PWD)/tb:$(PWD):$(PWD)/tests:$(PYTHONPATH)
 
 ifeq ($(EXTENDED)$(CLASSIC),00)
@@ -17,7 +24,7 @@ else
 SIM_BUILD ?= $(PWD)/sim_build_loopback_ext$(EXTENDED)_cls$(CLASSIC)
 endif
 
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback.sv
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback.sv $(PWD)/rtl/can_bit_timing.sv
 
 TOPLEVEL = can_fd_loopback
 COCOTB_TOPLEVEL = can_fd_loopback
@@ -26,6 +33,9 @@ TEST_MODULES ?= tests.test_loopback,tests.test_loopback_extended,tests.test_loop
 MODULE = $(TEST_MODULES)
 COCOTB_TEST_MODULES = $(TEST_MODULES)
 
-COMPILE_ARGS += -GEXTENDED=$(EXTENDED) -GCLASSIC=$(CLASSIC)
+COMPILE_ARGS += -GEXTENDED=$(EXTENDED) -GCLASSIC=$(CLASSIC) \
+                -GNBT_PRESCALER=$(NBT_PRESCALER) -GNBT_TSEG1=$(NBT_TSEG1) -GNBT_TSEG2=$(NBT_TSEG2) \
+                -GDBT_PRESCALER=$(DBT_PRESCALER) -GDBT_TSEG1=$(DBT_TSEG1) -GDBT_TSEG2=$(DBT_TSEG2) \
+                -GSSP_OFFSET=$(SSP_OFFSET)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

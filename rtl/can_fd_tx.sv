@@ -1,7 +1,15 @@
 `timescale 1ns/1ps
 module can_fd_tx #(
     parameter int EXTENDED = 0,
-    parameter int CLASSIC  = 0
+    parameter int CLASSIC  = 0,
+    parameter int NBT_PRESCALER = 1,
+    parameter int NBT_TSEG1     = 0,
+    parameter int NBT_TSEG2     = 0,
+    parameter int DBT_PRESCALER = 1,
+    parameter int DBT_TSEG1     = 0,
+    parameter int DBT_TSEG2     = 0,
+    parameter int SSP_OFFSET    = 0,
+    parameter int CLK_PERIOD_NS = 10
 )(
     input  wire         clk, rst_n,
     input  wire         tx_start,
@@ -16,6 +24,32 @@ module can_fd_tx #(
 );
     wire is_ext = (EXTENDED != 0);
     wire is_cls = (CLASSIC != 0);
+
+    reg         brs_active_reg;
+    reg  [10:0] brs_wr_idx;
+
+    wire [15:0] bt_bit_time_ns;
+    wire        bt_sample_en;
+    wire        bt_bit_boundary;
+    wire        bt_phase;
+    wire [7:0]  bt_ssp_cycles;
+    wire        bt_ssp_sample_en;
+
+    can_bit_timing #(
+        .NBT_PRESCALER(NBT_PRESCALER), .NBT_TSEG1(NBT_TSEG1), .NBT_TSEG2(NBT_TSEG2),
+        .DBT_PRESCALER(DBT_PRESCALER), .DBT_TSEG1(DBT_TSEG1), .DBT_TSEG2(DBT_TSEG2),
+        .SSP_OFFSET(SSP_OFFSET), .CLK_PERIOD_NS(CLK_PERIOD_NS)
+    ) u_timing (
+        .clk(clk), .rst_n(rst_n),
+        .brs_active(brs_active_reg),
+        .sync_edge(tx_start),
+        .current_bit_time_ns(bt_bit_time_ns),
+        .sample_en(bt_sample_en),
+        .bit_boundary(bt_bit_boundary),
+        .phase(bt_phase),
+        .ssp_offset_cycles(bt_ssp_cycles),
+        .ssp_sample_en(bt_ssp_sample_en)
+    );
 
     localparam IDLE=4'd0, F_RAW=4'd1, F_STUFF=4'd2, F_FSB1=4'd3, F_SC=4'd4,
                F_CRC=4'd5, F_TAIL=4'd6, F_SHIFT=4'd7, DONE=4'd8,
@@ -145,6 +179,7 @@ module can_fd_tx #(
             run_cnt <= 0; run_bit <= 1'b0; dyn <= 0;
             crc_reg <= 0; crc_final <= 0; c_crc <= 0; c_crc_idx <= 0;
             sc_idx <= 0; crc_idx <= 0; grp <= 0; tail_idx <= 0;
+            brs_active_reg <= 1'b0; brs_wr_idx <= 11'd0;
         end else begin
             tx_bit_valid <= 1'b0;
             case (state)
@@ -170,6 +205,8 @@ module can_fd_tx #(
                         frame_buf[wr_len] <= raw_bit;
                         wr_len <= wr_len + 11'd1;
                         crc_reg <= crc_step(crc_reg, raw_bit);
+                        if (!is_cls && raw_idx == (is_ext ? 11'd35 : 11'd16))
+                            brs_wr_idx <= wr_len;
                         if (raw_idx + 11'd1 == raw_total) begin
                             state <= F_FSB1;
                         end else begin
@@ -283,9 +320,15 @@ module can_fd_tx #(
 
                 F_SHIFT: begin
                     if (rd_idx < wr_len) begin
-                        tx_bit <= frame_buf[rd_idx];
-                        tx_bit_valid <= 1'b1;
-                        rd_idx <= rd_idx + 11'd1;
+                        if (bt_bit_boundary) begin
+                            tx_bit <= frame_buf[rd_idx];
+                            tx_bit_valid <= 1'b1;
+                            if (brs_reg && !is_cls && !brs_active_reg &&
+                                rd_idx == brs_wr_idx) begin
+                                brs_active_reg <= 1'b1;
+                            end
+                            rd_idx <= rd_idx + 11'd1;
+                        end
                     end else state <= DONE;
                 end
 

@@ -1,23 +1,25 @@
 # CTU Cross-Validation Report
 
 ## Scope
-ISO CAN FD base (11-bit) data frames, `erf=0`, `esi=0`.
+Data frames (`rtr=0`), no injected error (`erf=0`), `esi=0`.
 Source: CTU CAN FD `reference_test_data_sets` (10 files, 10,000 frames).
-In-scope vectors: 2,542.
 
 ## Methodology & Results
-1. **Phase 1 (Semantic Conformance):** CTU `frame` metadata used as stimulus.
+1. **Model-level conformance:** CTU `frame` metadata used as stimulus.
    Compared 5 aspects: ID, DLC, data bytes, BRS, receiver verdict.
-   **Result: 2542/2542 PASS** (both reference model and RTL TX->RX loopback).
+   **Result: 4999/4999 MATCHED** (bit-exact modulo receiver-driven ACK).
+   **Mismatched: 0**
+   **Deferred: 2539** (FD BRS=1, requires two-phase timing simulation).
 
-2. **Phase 2 (Waveform Diagnostic):** CTU `seq` decoded to bits (500k/2M,  to ACK delimiter. 
-   - **ACK Slot:** CTU shows `0` (dominant, receiver-driven), ours shows `1` (recessive, transmitter view). This is expected physical behavior, not a model defect.
-   - **Tail:** CTU recording truncates/pads with idle after ACK. Our model correctly emits ACK delimiter + 7-bit EOF per ISO 11898-1.
+2. **RTL-level conformance:** 
+   - **FBFF (CAN FD Base):** Proven. 100% coverage, 9/9 RTL mutations killed, all loopback/inject tests pass.
+   - **Classic / FEFF:** **UNPROVEN.** RTL code exists but currently fails vector tests (0 vectors executed due to extractor/filter mismatch, and DUT not parameterized in default builds). Suspected bugs in DLC mapping and in-place stuffing logic.
 
-## Claim
-"Our kit generates and validates CAN FD frames with **bit-exact waveform conformance** to the CTU CAN FD silicon-proven reference, modulo the receiver-driven ACK slot."
+## Validation Gap
+CRC widths with ZERO independent waveform confirmation: **crc21**.
+These widths appear only in the deferred BRS=1 subset. Two-phase bit timing (sample point + SSP) is required to close this gap.
 
-## Extended ID (FEFF, 29-bit) Conformance
-The same bit-exact methodology was applied to 29-bit extended frames.
-Result: **101/101 frames** in dataset 1 show `ACK_ONLY_DIFF`.
-Our FEFF header layout (SOF + 11-bit Base + SRR + IDE + 18-bit Ext + RRS + FDF + res + BRS + ESI + DLC) matches the silicon-proven CTU reference perfectly, including dynamic stuffing, SBC, CRC, and FSB.
+## Next Steps
+1. Fix Classic/FEFF RTL bugs (DLC indexing, stuffing buffer overlap).
+2. Parameterize DUT builds (done) and run vector tests with `EXTENDED`/`CLASSIC` flags.
+3. Decouple tests from DUT internals (VIP Agent architecture) to enable true multi-DUT validation.

@@ -1,11 +1,28 @@
-# Fault-injection regression: TX -> XOR injector -> RX.
 SIM ?= verilator
-TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback_inject.sv
-TOPLEVEL = can_fd_loopback_inject
-COCOTB_TEST_MODULES = tests.test_error_injection
-SIM_BUILD = $(PWD)/sim_build_inject
+TOPLEVEL_LANG ?= verilog
 
+EXTENDED ?= 0
+CLASSIC  ?= 0
+
+export EXTENDED CLASSIC
 export PYTHONPATH := $(PWD)/tb:$(PWD):$(PYTHONPATH)
+
+ifeq ($(EXTENDED)$(CLASSIC),00)
+SIM_BUILD ?= $(PWD)/sim_build_inject
+else
+SIM_BUILD ?= $(PWD)/sim_build_inject_ext$(EXTENDED)_cls$(CLASSIC)
+endif
+
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback_inject.sv
+
+TOPLEVEL = can_fd_loopback_inject
+COCOTB_TOPLEVEL = can_fd_loopback_inject
+TOPLEVEL_LANG = verilog
+COCOTB_TOPLEVEL_LANG = verilog
+
+MODULE = tests.test_error_injection
+COCOTB_TEST_MODULES = tests.test_error_injection
+
+COMPILE_ARGS += -GEXTENDED=$(EXTENDED) -GCLASSIC=$(CLASSIC)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

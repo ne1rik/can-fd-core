@@ -22,6 +22,7 @@ VECTORS = json.loads((ROOT / "coverage" / "ctu_vectors.json").read_text())
 SHARD = int(os.environ.get("XVAL_SHARD", "0"))
 SHARDS = int(os.environ.get("XVAL_SHARDS", "1"))
 SUBSET = VECTORS[SHARD::SHARDS]
+assert len(SUBSET) > 0, f"No vectors found for shard {SHARD}/{SHARDS}. Check extractor filters."
 
 
 async def _reset(dut):

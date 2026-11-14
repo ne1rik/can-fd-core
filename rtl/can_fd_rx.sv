@@ -1,23 +1,7 @@
 `timescale 1ns/1ps
-
-// CAN / CAN FD receiver, ISO 11898-1:2015, one wire bit per clock.
-//
-// CLASSIC=0 (CAN FD):
-//   DYN      - dynamically stuffed region (SOF..data). CRC is fed with the
-//              STUFFED stream (stuff bits included), per ISO CAN FD.
-//   CRC_LEAD - leading fixed stuff bit of the CRC field.
-//   CRC_SEQ  - stuff count + CRC, fixed stuff bit before each 4-bit group.
-//
-// CLASSIC=1 (Classic CAN 2.0):
-//   DYN      - dynamically stuffed region (SOF..data). CRC-15 is fed with the
-//              DESTUFFED stream: stuff bits are checked but NOT fed to the CRC.
-//   CRC_READ - the 15-bit CRC field, itself dynamically stuffed. Stuff bits are
-//              discarded here too. No stuff count, no fixed stuff bits.
-//
-//   TAIL     - CRC delimiter, ACK slot, ACK delimiter, EOF x7 (both modes).
 module can_fd_rx #(
-    parameter bit EXTENDED = 0,
-    parameter bit CLASSIC  = 0
+    parameter int EXTENDED = 0,
+    parameter int CLASSIC  = 0
 )(
     input  wire         clk, rst_n,
     input  wire         rx_bit,
@@ -30,6 +14,9 @@ module can_fd_rx #(
     output reg          rx_crc_err,
     output reg          rx_stuff_err
 );
+    wire is_ext = (EXTENDED != 0);
+    wire is_cls = (CLASSIC != 0);
+
     localparam IDLE=4'd0, DYN=4'd1, CRC_LEAD=4'd2, CRC_SEQ=4'd3,
                TAIL=4'd4, DONE=4'd5, CRC_READ=4'd6;
     reg [3:0] state;
@@ -59,8 +46,8 @@ module can_fd_rx #(
     wire [20:0] crc_mask = is_crc21 ? 21'h1FFFFF : 21'h01FFFF;
     wire [20:0] crc_calc = is_crc21 ? crc21 : {4'd0, crc17};
 
-    wire [10:0] header_len = CLASSIC ? (EXTENDED ? 11'd39 : 11'd19)
-                                     : (EXTENDED ? 11'd41 : 11'd22);
+    wire [10:0] header_len = is_cls ? (is_ext ? 11'd39 : 11'd19)
+                                    : (is_ext ? 11'd41 : 11'd22);
     wire [10:0] dlc_base = header_len - 11'd4;
     wire [1:0]  dlc_off  = raw_idx[1:0] - dlc_base[1:0];
 
@@ -110,12 +97,11 @@ module can_fd_rx #(
         end
     endfunction
 
-    // Classic CAN clamps the payload to 8 bytes for DLC > 8.
     function [6:0] payload_bytes(input [3:0] d);
         reg [6:0] n;
         begin
             n = dlc_bytes(d);
-            if (CLASSIC && n > 7'd8) n = 7'd8;
+            if (is_cls && n > 7'd8) n = 7'd8;
             payload_bytes = n;
         end
     endfunction
@@ -171,9 +157,7 @@ module can_fd_rx #(
                 DYN: begin
                     if (expect_stuff) begin
                         if (rx_bit != ~run_bit) rx_stuff_err <= 1'b1;
-                        // CAN FD: stuff bits ARE part of the CRC input.
-                        // Classic: CRC is over the DESTUFFED stream -> skip.
-                        if (!CLASSIC) begin
+                        if (!is_cls) begin
                             crc17 <= crc17_step(crc17, rx_bit);
                             crc21 <= crc21_step(crc21, rx_bit);
                         end
@@ -182,14 +166,14 @@ module can_fd_rx #(
                         run_len      <= 3'd1;
                         expect_stuff <= 1'b0;
                     end else begin
-                        if (CLASSIC) begin
+                        if (is_cls) begin
                             crc15 <= crc15_step(crc15, rx_bit);
                         end else begin
                             crc17 <= crc17_step(crc17, rx_bit);
                             crc21 <= crc21_step(crc21, rx_bit);
                         end
 
-                        if (EXTENDED) begin
+                        if (is_ext) begin
                             if (raw_idx >= 11'd1 && raw_idx <= 11'd11)
                                 rx_id[ida_idx] <= rx_bit;
                             else if (raw_idx >= 11'd14 && raw_idx <= 11'd31)
@@ -199,9 +183,9 @@ module can_fd_rx #(
                                 rx_id[idbase_idx] <= rx_bit;
                         end
 
-                        if (!CLASSIC && !EXTENDED && raw_idx == 11'd16)
+                        if (!is_cls && !is_ext && raw_idx == 11'd16)
                             brs_seen <= rx_bit;
-                        else if (!CLASSIC && EXTENDED && raw_idx == 11'd35)
+                        else if (!is_cls && is_ext && raw_idx == 11'd35)
                             brs_seen <= rx_bit;
 
                         if (raw_idx >= dlc_base && raw_idx <= header_len - 11'd1) begin
@@ -230,21 +214,17 @@ module can_fd_rx #(
                             raw_total_r <= header_len +
                                 ({4'd0, payload_bytes({dlc_shift[2:0], rx_bit})} << 3);
                             if (payload_bytes({dlc_shift[2:0], rx_bit}) == 7'd0) begin
-                                if (CLASSIC) begin
+                                if (is_cls) begin
                                     crc15_idx <= 4'd0;
                                     state <= CRC_READ;
-                                end else begin
-                                    state <= CRC_LEAD;
-                                end
+                                end else state <= CRC_LEAD;
                             end
                         end else if (raw_idx >= header_len &&
                                      (raw_idx + 11'd1) == raw_total_r) begin
-                            if (CLASSIC) begin
+                            if (is_cls) begin
                                 crc15_idx <= 4'd0;
                                 state <= CRC_READ;
-                            end else begin
-                                state <= CRC_LEAD;
-                            end
+                            end else state <= CRC_LEAD;
                         end
                     end
                 end
@@ -274,18 +254,19 @@ module can_fd_rx #(
                     end
                 end
 
-                // Classic CAN: the 15-bit CRC field is itself dynamically
-                // stuffed. Discard stuff bits, do not feed them anywhere.
                 CRC_READ: begin
                     if (expect_stuff) begin
                         if (rx_bit != ~run_bit) rx_stuff_err <= 1'b1;
                         run_bit      <= rx_bit;
                         run_len      <= 3'd1;
                         expect_stuff <= 1'b0;
+                        if (crc15_idx == 4'd15) begin
+                            tail_idx <= 4'd0;
+                            state    <= TAIL;
+                        end
                     end else begin
                         crc15_rx  <= {crc15_rx[13:0], rx_bit};
                         crc15_idx <= crc15_idx + 4'd1;
-
                         if (rx_bit == run_bit) begin
                             run_len <= run_len + 3'd1;
                             if (run_len == 3'd4) expect_stuff <= 1'b1;
@@ -293,8 +274,8 @@ module can_fd_rx #(
                             run_bit <= rx_bit;
                             run_len <= 3'd1;
                         end
-
-                        if (crc15_idx == 4'd14) begin
+                        if (crc15_idx == 4'd14 &&
+                            !(run_len == 3'd4 && rx_bit == run_bit)) begin
                             tail_idx <= 4'd0;
                             state    <= TAIL;
                         end
@@ -304,7 +285,7 @@ module can_fd_rx #(
                 TAIL: begin
                     if (tail_idx == 4'd0) begin
                         if (rx_bit != 1'b1) form_err <= 1'b1;
-                        if (CLASSIC) begin
+                        if (is_cls) begin
                             if (crc15_rx != crc15) rx_crc_err <= 1'b1;
                         end else begin
                             if ((crc_rx & crc_mask) != (crc_calc & crc_mask))

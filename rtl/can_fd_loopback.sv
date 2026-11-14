@@ -1,10 +1,7 @@
 `timescale 1ns/1ps
-
-// TX -> wired-AND bus -> RX. The receiver pulls the ACK slot dominant,
-// as it does on a real bus.
 module can_fd_loopback #(
-    parameter bit EXTENDED = 0,
-    parameter bit CLASSIC  = 0
+    parameter int EXTENDED = 0,
+    parameter int CLASSIC  = 0
 )(
     input  wire         clk, rst_n,
     input  wire         tx_start,

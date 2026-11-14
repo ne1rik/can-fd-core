@@ -1,11 +1,31 @@
-# Loopback regression: TX -> wire -> RX.
 SIM ?= verilator
-TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback.sv
-TOPLEVEL = can_fd_loopback
-COCOTB_TEST_MODULES = tests.test_loopback,tests.test_loopback_extended,tests.test_loopback_sweep,tests.test_loopback_comprehensive
-SIM_BUILD = $(PWD)/sim_build_loopback
+TOPLEVEL_LANG ?= verilog
 
-export PYTHONPATH := $(PWD)/tb:$(PWD):$(PYTHONPATH)
+EXTENDED ?= 0
+CLASSIC  ?= 0
+XVAL_SHARD ?= 0
+XVAL_SHARDS ?= 1
+XVAL_LIMIT ?= 0
+CASE_IDX ?=
+
+export EXTENDED CLASSIC XVAL_SHARD XVAL_SHARDS XVAL_LIMIT CASE_IDX
+export PYTHONPATH := $(PWD)/tb:$(PWD):$(PWD)/tests:$(PYTHONPATH)
+
+ifeq ($(EXTENDED)$(CLASSIC),00)
+SIM_BUILD ?= $(PWD)/sim_build_loopback
+else
+SIM_BUILD ?= $(PWD)/sim_build_loopback_ext$(EXTENDED)_cls$(CLASSIC)
+endif
+
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback.sv
+
+TOPLEVEL = can_fd_loopback
+COCOTB_TOPLEVEL = can_fd_loopback
+
+TEST_MODULES ?= tests.test_loopback,tests.test_loopback_extended,tests.test_loopback_sweep,tests.test_loopback_comprehensive
+MODULE = $(TEST_MODULES)
+COCOTB_TEST_MODULES = $(TEST_MODULES)
+
+COMPILE_ARGS += -GEXTENDED=$(EXTENDED) -GCLASSIC=$(CLASSIC)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

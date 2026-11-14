@@ -2,8 +2,8 @@
 
 // Loopback with a single-bit XOR fault injector on the bus.
 module can_fd_loopback_inject #(
-    parameter bit EXTENDED = 0,
-    parameter bit CLASSIC  = 0
+    parameter int EXTENDED = 0,
+    parameter int CLASSIC  = 0
 )(
     input  wire         clk, rst_n,
     input  wire         tx_start,

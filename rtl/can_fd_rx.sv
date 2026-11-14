@@ -34,6 +34,12 @@ module can_fd_rx #(
 
     wire rx_sample_strobe = bt_phase ? bt_ssp_sample_en : bt_sample_en;
 
+    // Hard sync on SOF falling edge (recessive→dominant).
+    // rx_bit_d is updated on every clock, independent of rx_sample_strobe,
+    // so the edge detector works even when FSM is gated by strobe.
+    reg rx_bit_d;
+    wire sof_sync = (rx_bit_d == 1'b1) && (rx_bit == 1'b0) && (state == IDLE);
+
     can_bit_timing #(
         .NBT_PRESCALER(NBT_PRESCALER), .NBT_TSEG1(NBT_TSEG1), .NBT_TSEG2(NBT_TSEG2),
         .DBT_PRESCALER(DBT_PRESCALER), .DBT_TSEG1(DBT_TSEG1), .DBT_TSEG2(DBT_TSEG2),
@@ -41,7 +47,7 @@ module can_fd_rx #(
     ) u_timing (
         .clk(clk), .rst_n(rst_n),
         .brs_active(brs_seen),
-        .sync_edge((state == IDLE) && (rx_bit == 1'b0)),
+        .sync_edge(sof_sync),
         .current_bit_time_ns(bt_bit_time_ns),
         .sample_en(bt_sample_en),
         .bit_boundary(bt_bit_boundary),
@@ -140,6 +146,11 @@ module can_fd_rx #(
     endfunction
 
     assign rx_ack = (state == TAIL && tail_idx == 4'd1) ? 1'b0 : 1'b1;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) rx_bit_d <= 1'b1;
+        else        rx_bit_d <= rx_bit;
+    end
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

@@ -42,7 +42,7 @@ module can_fd_tx #(
     ) u_timing (
         .clk(clk), .rst_n(rst_n),
         .brs_active(brs_active_reg),
-        .sync_edge(tx_start),
+        .sync_edge(state == F_SHIFT && rd_idx == 11'd0 && bt_bit_boundary),
         .current_bit_time_ns(bt_bit_time_ns),
         .sample_en(bt_sample_en),
         .bit_boundary(bt_bit_boundary),

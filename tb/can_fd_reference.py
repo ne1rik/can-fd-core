@@ -12,6 +12,10 @@ CRC conventions:
 
 Frame boundary = end of EOF. Tail is 10 bits:
 CRC delimiter + ACK slot + ACK delimiter + EOF x 7.
+
+Classic CAN note: CRC-15 is computed over the UNSTUFFED stream (header + data),
+then appended, and the ENTIRE sequence (header + data + CRC) is then stuffed.
+This differs from CAN FD where CRC is computed over the stuffed stream.
 """
 
 # BRS position in UNSTUFFED header (FD only)
@@ -126,14 +130,17 @@ def _raw_of(fid, dlc, data, brs, extended=False, classic=False):
 def _build(fid, dlc, data, brs=True, extended=False, classic=False):
     """Full frame decomposition with bit indices."""
     raw = _raw_of(fid, dlc, data, brs, extended, classic)
-    st, pos = stuff_bits(raw)
 
     if classic:
-        # Classic CAN: no SBC, no FSB, just dynamic stuffing + CRC-15
-        crc = _crc_val(st, 15, 0x4599, 0)
+        # Classic CAN: CRC is calculated over the UNSTUFFED stream.
+        # Then CRC is appended, and the ENTIRE sequence is stuffed.
+        crc = _crc_val(raw, 15, 0x4599, 0)
         cb = [(crc >> i) & 1 for i in range(14, -1, -1)]
-        bits = st + cb + [1, 1, 1] + [1] * 7  # CRC + tail
-        brs_raw = None  # No BRS in Classic CAN
+        raw_with_crc = raw + cb
+        
+        st, pos = stuff_bits(raw_with_crc)
+        bits = st + [1, 1, 1] + [1] * 7  # Tail: CRC del(1), ACK(1), ACK del(1), EOF(7)
+        
         base = len(st)
         return {
             "bits": bits,
@@ -142,13 +149,13 @@ def _build(fid, dlc, data, brs=True, extended=False, classic=False):
             "dyn_count": len(pos),
             "dyn_stuff_indices": [si for (_ri, si, _sb) in pos],
             "boundary_fsb": False,
-            "stuffed_data_len": base,
-            "crc_field_start": base,
+            "stuffed_data_len": base,  # Now includes CRC in the stuffed region
+            "crc_field_start": len(raw),
             "crc_field_len": 15,
             "fsb_indices": [],
             "sc_indices": [],
-            "crc_bit_indices": list(range(base, base + 15)),
-            "tail_start": base + 15,
+            "crc_bit_indices": list(range(len(raw), len(raw) + 15)),
+            "tail_start": base,
             "tail_len": 10,
             "crc_width": 15,
             "crc_value": crc,
@@ -160,6 +167,8 @@ def _build(fid, dlc, data, brs=True, extended=False, classic=False):
         }
     else:
         # CAN FD: SBC + FSB
+        st, pos = stuff_bits(raw)
+
         boundary = bool(pos) and pos[-1][0] == len(raw) - 1
         if boundary:
             fsb = st[-1]

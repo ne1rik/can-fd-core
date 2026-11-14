@@ -10,39 +10,34 @@ from can_fd_reference import (
 
 
 def decode_back_classic(bits, lay):
-    """Decode Classic CAN frame."""
+    """Decode Classic CAN frame (CRC is now inside the stuffed region)."""
     stuff = set(lay["dyn_stuff_indices"])
-    raw = [b for i, b in enumerate(bits[:lay["stuffed_data_len"]]) if i not in stuff]
+    raw_with_crc = [b for i, b in enumerate(bits[:lay["stuffed_data_len"]]) if i not in stuff]
     
     if lay["extended"]:
         ida = 0
-        for b in raw[1:12]:
+        for b in raw_with_crc[1:12]:
             ida = (ida << 1) | b
-        assert raw[12] == 1 and raw[13] == 1, "SRR/IDE must be recessive in Classic Extended"
         idb = 0
-        for b in raw[14:32]:
+        for b in raw_with_crc[14:32]:
             idb = (idb << 1) | b
         fid = (ida << 18) | idb
-        ctrl = raw[32:39]  # RTR, r1, r0, DLC[3:0]
-        dlc_bits = raw[35:39]
+        ctrl = raw_with_crc[32:39]
+        dlc_bits = raw_with_crc[35:39]
         data_start = 39
     else:
         fid = 0
-        for b in raw[1:12]:
+        for b in raw_with_crc[1:12]:
             fid = (fid << 1) | b
-        ctrl = raw[12:19]  # RTR, IDE, r0, DLC[3:0]
-        dlc_bits = raw[15:19]
+        ctrl = raw_with_crc[12:19]
+        dlc_bits = raw_with_crc[15:19]
         data_start = 19
     
-    dlc = 0
-    for b in dlc_bits:
-        dlc = (dlc << 1) | b
+    dlc = sum(b << (3-i) for i, b in enumerate(dlc_bits))
     n = dlc_len(dlc, classic=True)
     data = []
     for k in range(n):
-        v = 0
-        for b in raw[data_start + 8*k : data_start + 8*k + 8]:
-            v = (v << 1) | b
+        v = sum(b << (7-i) for i, b in enumerate(raw_with_crc[data_start + 8*k : data_start + 8*k + 8]))
         data.append(v)
     return fid, dlc, data, ctrl
 
@@ -59,7 +54,7 @@ def test_classic_base_roundtrip(fid, dlc, brs):
     assert lay["bits"] == bits
     assert lay["header_len"] == HEADER_LEN_CLASSIC
     assert lay["raw_len"] == HEADER_LEN_CLASSIC + 8 * n
-    assert len(bits) == lay["stuffed_data_len"] + 15 + 10  # CRC-15 + tail
+    assert len(bits) == lay["stuffed_data_len"] + 10  # tail only
     assert bits[-10:] == [1] * 10
     assert lay["brs_index"] is None  # No BRS in Classic
     assert lay["crc_width"] == 15
@@ -86,7 +81,7 @@ def test_classic_extended_roundtrip(fid, dlc, brs=False):
     assert lay["bits"] == bits
     assert lay["header_len"] == HEADER_LEN_CLASSIC_EXT
     assert lay["raw_len"] == HEADER_LEN_CLASSIC_EXT + 8 * n
-    assert len(bits) == lay["stuffed_data_len"] + 15 + 10
+    assert len(bits) == lay["stuffed_data_len"] + 10
     assert bits[-10:] == [1] * 10
     assert lay["brs_index"] is None
     assert lay["crc_width"] == 15

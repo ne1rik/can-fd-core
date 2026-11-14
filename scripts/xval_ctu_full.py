@@ -73,12 +73,16 @@ def main():
     stats = Counter()
     per_ds = {}
     failures = []
+    
+    # Coverage counters
     cov_fmt = Counter()
     cov_crc = Counter()
     cov_dlc = Counter()
     cov_pat = Counter()
     cross_fmt_crc = Counter()
     cross_fmt_pat = Counter()
+    
+    # Deferred counters
     def_crc = Counter()
     def_dlc = Counter()
 
@@ -104,6 +108,7 @@ def main():
             if not classic and f['brs'] == 1:
                 ds[f'{name}:deferred_brs1'] += 1
                 stats[f'{name}:deferred_brs1'] += 1
+                
                 nb_d = dlc_len(f['dlc'], classic=False)
                 def_crc['crc21' if nb_d > 16 else 'crc17'] += 1
                 def_dlc[f'dlc{f["dlc"]}'] += 1
@@ -144,6 +149,8 @@ def main():
         "matched": total_ok,
         "mismatched": total_bad,
         "deferred_brs1": total_def,
+        "deferred_crc": dict(def_crc),
+        "deferred_dlc": dict(sorted(def_dlc.items(), key=lambda x: int(x[0][3:]))),
         "model_format_coverage": {
             "format": dict(cov_fmt),
             "crc_width": dict(cov_crc),
@@ -152,9 +159,6 @@ def main():
             "format_x_crc": {f"{a}|{b}": c for (a, b), c in sorted(cross_fmt_crc.items())},
             "format_x_pattern": {f"{a}|{b}": c for (a, b), c in sorted(cross_fmt_pat.items())},
         },
-        "deferred_crc": dict(def_crc),
-        "deferred_dlc": dict(sorted(def_dlc.items(), key=lambda x: int(x[0][3:]))),
-        "uncovered_crc_in_matched": sorted({"crc15","crc17","crc21"} - set(cov_crc)),
         "failures": failures,
     }
     out = ROOT / args.out
@@ -169,38 +173,47 @@ def main():
     for k, v in sorted(stats.items()):
         a, b = k.split(":", 1)
         L.append(f"| {a} | {b} | {v} |")
+    
     L += ["", "## Model-level format coverage (from CTU corpus)", "",
           "| Format | Frames |", "|---|---|"]
     for k, v in sorted(cov_fmt.items()):
         L.append(f"| {k} | {v} |")
+    
     L += ["", "| CRC width | Frames |", "|---|---|"]
     for k, v in sorted(cov_crc.items()):
         L.append(f"| {k} | {v} |")
+    
     L += ["", "| Format x CRC | Frames |", "|---|---|"]
     for (a, b), c in sorted(cross_fmt_crc.items()):
         L.append(f"| {a} x {b} | {c} |")
+    
     L += ["", "## Deferred (FD BRS=1) breakdown", "",
           "| CRC width | Deferred frames |", "|---|---|"]
     for k, v in sorted(def_crc.items()):
         L.append(f"| {k} | {v} |")
+    
     L += ["", "| DLC | Deferred frames |", "|---|---|"]
     for k, v in sorted(def_dlc.items(), key=lambda x: int(x[0][3:])):
         L.append(f"| {k} | {v} |")
-    missing = sorted({"crc15","crc17","crc21"} - set(cov_crc))
+    
+    missing = sorted({"crc15", "crc17", "crc21"} - set(cov_crc))
     L += ["", "## VALIDATION GAP", ""]
     if missing:
-        L.append(f"CRC widths with ZERO independent waveform confirmation: **{", ".join(missing)}**")
+        L.append(f"CRC widths with ZERO independent waveform confirmation: **{', '.join(missing)}**")
         L.append("")
         L.append("These widths appear only in the deferred BRS=1 subset. Two-phase bit")
         L.append("timing (sample point + SSP) is required to close this gap.")
     else:
         L.append("All CRC widths independently confirmed.")
+    
     L += ["", "NOTE: RTL coverage remains FBFF-scoped until RTL supports all formats.", ""]
+    
     if failures:
         L += ["## Failures (first 20)", ""]
         for f in failures:
             L.append(f"- ds{f['dataset']} {f['format']} id={f['id']:#x} "
                      f"dlc={f['dlc']} {f['verdict']} @ {f['first_diff']}")
+    
     Path(str(out) + ".md").write_text("\n".join(L) + "\n")
 
     print()

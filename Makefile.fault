@@ -1,0 +1,17 @@
+SIM ?= verilator
+TOPLEVEL_LANG ?= verilog
+
+export PYTHONPATH := $(PWD)/tb:$(PWD):$(PWD)/tests:$(PYTHONPATH)
+
+SIM_BUILD ?= $(PWD)/sim_build_fault
+
+VERILOG_SOURCES = $(PWD)/rtl/can_fault_manager.sv
+
+TOPLEVEL = can_fault_manager
+COCOTB_TOPLEVEL = can_fault_manager
+
+TEST_MODULES = tests.test_fault_manager
+MODULE = $(TEST_MODULES)
+COCOTB_TEST_MODULES = $(TEST_MODULES)
+
+include $(shell cocotb-config --makefiles)/Makefile.sim

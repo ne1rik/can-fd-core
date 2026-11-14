@@ -1,0 +1,32 @@
+SIM ?= verilator
+TOPLEVEL_LANG ?= verilog
+
+NBT_PRESCALER ?= 1
+NBT_TSEG1     ?= 12
+NBT_TSEG2     ?= 4
+DBT_PRESCALER ?= 1
+DBT_TSEG1     ?= 3
+DBT_TSEG2     ?= 1
+SSP_OFFSET    ?= 0
+
+export NBT_PRESCALER NBT_TSEG1 NBT_TSEG2
+export DBT_PRESCALER DBT_TSEG1 DBT_TSEG2 SSP_OFFSET
+export PYTHONPATH := $(PWD)/tb:$(PWD):$(PWD)/tests:$(PYTHONPATH)
+
+SIM_BUILD ?= $(PWD)/sim_build_bittiming
+
+VERILOG_SOURCES = $(PWD)/rtl/can_bit_timing.sv
+
+TOPLEVEL = can_bit_timing
+COCOTB_TOPLEVEL = can_bit_timing
+
+TEST_MODULES = tests.test_bit_timing
+MODULE = $(TEST_MODULES)
+COCOTB_TEST_MODULES = $(TEST_MODULES)
+
+COMPILE_ARGS += -GNBT_PRESCALER=$(NBT_PRESCALER) -GNBT_TSEG1=$(NBT_TSEG1) \
+                -GNBT_TSEG2=$(NBT_TSEG2) -GDBT_PRESCALER=$(DBT_PRESCALER) \
+                -GDBT_TSEG1=$(DBT_TSEG1) -GDBT_TSEG2=$(DBT_TSEG2) \
+                -GSSP_OFFSET=$(SSP_OFFSET)
+
+include $(shell cocotb-config --makefiles)/Makefile.sim

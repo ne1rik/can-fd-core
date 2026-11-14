@@ -1,0 +1,154 @@
+{
+ "deferred_brs1": 2539,
+ "failures": [],
+ "matched": 4999,
+ "mismatched": 0,
+ "model_format_coverage": {
+  "crc_width": {
+   "crc15": 2484,
+   "crc17": 2515
+  },
+  "dlc": {
+   "dlc0": 537,
+   "dlc1": 533,
+   "dlc10": 256,
+   "dlc2": 584,
+   "dlc3": 499,
+   "dlc4": 543,
+   "dlc5": 515,
+   "dlc6": 554,
+   "dlc7": 522,
+   "dlc8": 224,
+   "dlc9": 232
+  },
+  "format": {
+   "classic_base": 1238,
+   "classic_ext": 1246,
+   "fd_base": 1281,
+   "fd_ext": 1234
+  },
+  "format_x_crc": {
+   "classic_base|crc15": 1238,
+   "classic_ext|crc15": 1246,
+   "fd_base|crc17": 1281,
+   "fd_ext|crc17": 1234
+  },
+  "format_x_pattern": {
+   "classic_base|random": 1084,
+   "classic_base|zeros": 154,
+   "classic_ext|random": 1110,
+   "classic_ext|zeros": 136,
+   "fd_base|random": 1145,
+   "fd_base|zeros": 136,
+   "fd_ext|alternating": 1,
+   "fd_ext|random": 1121,
+   "fd_ext|zeros": 112
+  },
+  "pattern": {
+   "alternating": 1,
+   "random": 4460,
+   "zeros": 538
+  }
+ },
+ "per_dataset": {
+  "1": {
+   "classic_base:ACK_ONLY_DIFF": 133,
+   "classic_ext:ACK_ONLY_DIFF": 116,
+   "fd_base:ACK_ONLY_DIFF": 143,
+   "fd_base:deferred_brs1": 127,
+   "fd_ext:ACK_ONLY_DIFF": 101,
+   "fd_ext:deferred_brs1": 128,
+   "out_of_scope": 252
+  },
+  "2": {
+   "classic_base:ACK_ONLY_DIFF": 120,
+   "classic_ext:ACK_ONLY_DIFF": 121,
+   "fd_base:ACK_ONLY_DIFF": 122,
+   "fd_base:deferred_brs1": 145,
+   "fd_ext:ACK_ONLY_DIFF": 114,
+   "fd_ext:deferred_brs1": 132,
+   "out_of_scope": 246
+  },
+  "3": {
+   "classic_base:ACK_ONLY_DIFF": 109,
+   "classic_ext:ACK_ONLY_DIFF": 127,
+   "fd_base:ACK_ONLY_DIFF": 116,
+   "fd_base:deferred_brs1": 148,
+   "fd_ext:ACK_ONLY_DIFF": 144,
+   "fd_ext:deferred_brs1": 122,
+   "out_of_scope": 234
+  },
+  "4": {
+   "classic_base:ACK_ONLY_DIFF": 128,
+   "classic_ext:ACK_ONLY_DIFF": 118,
+   "fd_base:ACK_ONLY_DIFF": 128,
+   "fd_base:deferred_brs1": 112,
+   "fd_ext:ACK_ONLY_DIFF": 114,
+   "fd_ext:deferred_brs1": 152,
+   "out_of_scope": 248
+  },
+  "5": {
+   "classic_base:ACK_ONLY_DIFF": 113,
+   "classic_ext:ACK_ONLY_DIFF": 126,
+   "fd_base:ACK_ONLY_DIFF": 128,
+   "fd_base:deferred_brs1": 122,
+   "fd_ext:ACK_ONLY_DIFF": 130,
+   "fd_ext:deferred_brs1": 118,
+   "out_of_scope": 263
+  },
+  "6": {
+   "classic_base:ACK_ONLY_DIFF": 118,
+   "classic_ext:ACK_ONLY_DIFF": 128,
+   "fd_base:ACK_ONLY_DIFF": 114,
+   "fd_base:deferred_brs1": 140,
+   "fd_ext:ACK_ONLY_DIFF": 119,
+   "fd_ext:deferred_brs1": 125,
+   "out_of_scope": 256
+  },
+  "7": {
+   "classic_base:ACK_ONLY_DIFF": 131,
+   "classic_ext:ACK_ONLY_DIFF": 123,
+   "fd_base:ACK_ONLY_DIFF": 128,
+   "fd_base:deferred_brs1": 116,
+   "fd_ext:ACK_ONLY_DIFF": 130,
+   "fd_ext:deferred_brs1": 117,
+   "out_of_scope": 255
+  },
+  "8": {
+   "classic_base:ACK_ONLY_DIFF": 140,
+   "classic_ext:ACK_ONLY_DIFF": 133,
+   "fd_base:ACK_ONLY_DIFF": 152,
+   "fd_base:deferred_brs1": 123,
+   "fd_ext:ACK_ONLY_DIFF": 128,
+   "fd_ext:deferred_brs1": 99,
+   "out_of_scope": 225
+  },
+  "9": {
+   "classic_base:ACK_ONLY_DIFF": 122,
+   "classic_ext:ACK_ONLY_DIFF": 119,
+   "fd_base:ACK_ONLY_DIFF": 138,
+   "fd_base:deferred_brs1": 110,
+   "fd_ext:ACK_ONLY_DIFF": 124,
+   "fd_ext:deferred_brs1": 137,
+   "out_of_scope": 250
+  },
+  "10": {
+   "classic_base:ACK_ONLY_DIFF": 124,
+   "classic_ext:ACK_ONLY_DIFF": 135,
+   "fd_base:ACK_ONLY_DIFF": 112,
+   "fd_base:deferred_brs1": 118,
+   "fd_ext:ACK_ONLY_DIFF": 130,
+   "fd_ext:deferred_brs1": 148,
+   "out_of_scope": 233
+  }
+ },
+ "scope": "data frames, erf=0, esi=0; CAN FD BRS=1 deferred (single-phase sim)",
+ "totals": {
+  "classic_base:ACK_ONLY_DIFF": 1238,
+  "classic_ext:ACK_ONLY_DIFF": 1246,
+  "fd_base:ACK_ONLY_DIFF": 1281,
+  "fd_base:deferred_brs1": 1261,
+  "fd_ext:ACK_ONLY_DIFF": 1234,
+  "fd_ext:deferred_brs1": 1278
+ }
+}

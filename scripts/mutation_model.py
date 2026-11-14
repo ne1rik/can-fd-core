@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Mutation testing of the reference MODEL, oracle = CTU cross-validation.
 
-Rationale: RTL does not yet implement Classic/FEFF, so RTL mutants cannot
-cover that code. The model does, and the CTU corpus is an independent oracle.
-A surviving mutant means the xval gate does not actually check that property.
+Each mutant declares its EXPECTED outcome:
+  KILLED   - the CTU oracle must catch it (a real checked property)
+  SURVIVED - a KNOWN ORACLE GAP; surviving is the expected, documented result
+
+An unexpected SURVIVED is a failure. An unexpected KILLED means a gap closed
+and the expectation should be updated.
 
 Requires tb/can_fd_reference.py to be committed (restore point).
 """
@@ -16,20 +19,20 @@ MODEL = "tb/can_fd_reference.py"
 
 
 class M:
-    def __init__(self, name, old, new, desc):
-        self.name, self.old, self.new, self.desc = name, old, new, desc
+    def __init__(self, name, old, new, desc, expect="KILLED"):
+        self.name, self.old, self.new, self.desc, self.expect = name, old, new, desc, expect
 
 
 MUTANTS = [
-    # --- Classic CAN: the exact bug we just fixed, plus neighbours ---
+    # --- Classic CAN ---
     M("classic_crc_over_stuffed",
       "crc = _crc_val(raw, 15, 0x4599, 0)",
       "crc = _crc_val(stuff_bits(raw)[0], 15, 0x4599, 0)",
-      "Classic CRC-15 computed over STUFFED stream (the real bug)"),
+      "Classic CRC-15 over STUFFED stream (the real bug we fixed)"),
     M("classic_crc_not_stuffed",
       "st, pos = stuff_bits(raw_with_crc)",
       "st, pos = stuff_bits(raw); st = st + cb",
-      "Classic CRC appended after stuffing (CRC field left unstuffed)"),
+      "Classic CRC field left unstuffed"),
     M("classic_crc_poly_lsb",
       "crc = _crc_val(raw, 15, 0x4599, 0)",
       "crc = _crc_val(raw, 15, 0x4598, 0)",
@@ -37,23 +40,19 @@ MUTANTS = [
     M("classic_crc_init_msb",
       "crc = _crc_val(raw, 15, 0x4599, 0)",
       "crc = _crc_val(raw, 15, 0x4599, 1 << 14)",
-      "Classic CRC init MSB-set instead of 0 (FD convention leaked)"),
+      "Classic CRC init MSB-set (FD convention leaked)"),
 
-    # --- FEFF geometry ---
+    # --- FEFF geometry (single-line unique targets) ---
     M("feff_drop_res_bit",
       "r += [0, 1, 0]  # RRS=0, FDF=1, res=0",
       "r += [0, 1]  # mutant: res dropped",
       "FEFF reserved bit removed (40-bit header instead of 41)"),
-    M("feff_srr_dominant",
-      "        r += [1, 1]  # SRR, IDE\n"
-      "        r += [(fid >> i) & 1 for i in range(17, -1, -1)]  # ID B[17:0]\n"
-      "        r += [0, 1, 0]  # RRS=0, FDF=1, res=0",
-      "        r += [0, 1]  # mutant: SRR dominant\n"
-      "        r += [(fid >> i) & 1 for i in range(17, -1, -1)]  # ID B[17:0]\n"
-      "        r += [0, 1, 0]  # RRS=0, FDF=1, res=0",
-      "FEFF SRR driven dominant instead of recessive"),
+    M("feff_rrs_dominant",
+      "r += [0, 1, 0]  # RRS=0, FDF=1, res=0",
+      "r += [1, 1, 0]  # mutant: RRS dominant",
+      "FEFF RRS driven dominant instead of recessive"),
 
-    # --- FBFF / shared machinery ---
+    # --- shared FD machinery ---
     M("sbc_odd_parity",
       "bits.append(sum(bits) % 2)",
       "bits.append(1 - sum(bits) % 2)",
@@ -70,6 +69,17 @@ MUTANTS = [
       "last, run = sb, 1",
       "last, run = sb, 0",
       "Stuff bit does not start the next run"),
+    M("fd_crc17_poly_lsb",
+      "w, poly = (21, 0x102899) if n > 16 else (17, 0x1685B)",
+      "w, poly = (21, 0x102899) if n > 16 else (17, 0x1685A)",
+      "CRC-17 polynomial LSB flipped"),
+
+    # --- KNOWN ORACLE GAP: no DLC>=11 frame exists in the BRS=0 corpus ---
+    M("fd_crc21_poly_lsb",
+      "w, poly = (21, 0x102899) if n > 16 else (17, 0x1685B)",
+      "w, poly = (21, 0x102898) if n > 16 else (17, 0x1685B)",
+      "CRC-21 polynomial LSB flipped — GAP: no BRS=0 frame has DLC>=11",
+      expect="SURVIVED"),
 ]
 
 
@@ -80,7 +90,6 @@ def clean():
 
 
 def oracle():
-    """True if CTU cross-validation passes (dataset 1, all formats)."""
     p = subprocess.run([sys.executable, "scripts/xval_ctu_full.py",
                         "--only", "1", "--out", "coverage/_mut"],
                        capture_output=True, text=True, cwd=ROOT)
@@ -94,17 +103,15 @@ def main():
 
     path = ROOT / MODEL
     original = path.read_text()
-    results = []
+    rows = []
+    problems = []
 
     for m in MUTANTS:
         n = original.count(m.old)
-        if n == 0:
-            results.append((m.name, "SKIP", "target not found"))
-            print(f"[SKIP] {m.name}: target not found")
-            continue
-        if n > 1:
-            results.append((m.name, "SKIP", f"ambiguous target ({n} matches)"))
-            print(f"[SKIP] {m.name}: ambiguous target ({n} matches)")
+        if n != 1:
+            rows.append((m.name, "SKIP", f"target matches={n}", m.desc))
+            print(f"[SKIP] {m.name}: target matches={n}")
+            problems.append(m.name)
             continue
 
         path.write_text(original.replace(m.old, m.new))
@@ -116,31 +123,32 @@ def main():
             print(f"       {e}")
         finally:
             path.write_text(original)
-        results.append((m.name, status, m.desc))
-        print(f"[{status}] {m.name}")
+
+        if status == m.expect:
+            tag = "KILLED" if status == "KILLED" else "GAP-CONFIRMED"
+        elif status == "KILLED" and m.expect == "SURVIVED":
+            tag = "GAP-CLOSED"
+            print(f"       NOTE: gap closed for {m.name}; update expectation")
+        else:
+            tag = "UNEXPECTED-SURVIVAL"
+            problems.append(m.name)
+        rows.append((m.name, tag, m.expect, m.desc))
+        print(f"[{tag}] {m.name}")
 
     print()
-    print(f"{'MUTANT':28s} {'RESULT':10s} DESCRIPTION")
-    print("-" * 90)
-    for name, st, desc in results:
-        print(f"{name:28s} {st:10s} {desc}")
+    print(f"{'MUTANT':26s} {'RESULT':20s} {'EXPECT':10s} DESCRIPTION")
+    print("-" * 104)
+    for name, tag, exp, desc in rows:
+        print(f"{name:26s} {tag:20s} {exp:10s} {desc}")
 
-    applied = [r for r in results if r[1] in ("KILLED", "SURVIVED")]
-    killed = [r for r in applied if r[1] == "KILLED"]
-    survived = [r for r in applied if r[1] == "SURVIVED"]
-    skipped = [r for r in results if r[1] == "SKIP"]
-
-    print("-" * 90)
-    print(f"kill rate: {len(killed)}/{len(applied)}"
-          + (f"  (skipped {len(skipped)})" if skipped else ""))
-    if survived:
-        print("\nSURVIVING — the xval gate does NOT check these:")
-        for name, _, desc in survived:
-            print(f"  - {name}: {desc}")
+    killed = sum(1 for r in rows if r[1] == "KILLED")
+    gaps = sum(1 for r in rows if r[1] == "GAP-CONFIRMED")
+    print("-" * 104)
+    print(f"killed: {killed}   documented gaps: {gaps}   problems: {len(problems)}")
+    if problems:
+        print("PROBLEMS: " + ", ".join(problems))
         return 1
-    if not applied:
-        return 2
-    print("\nall model mutants killed by the CTU oracle")
+    print("\nall expectations met (gaps are documented, not hidden)")
     return 0
 
 

@@ -8,11 +8,11 @@ th, td { border: 1px solid #ccc; padding: 1.4mm 2mm; text-align: left; vertical-
 th { background: #efefef; } code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; }
 .foot { color: #666; font-size: 8.5pt; margin-top: 6mm; border-top: 1px solid #ddd; padding-top: 2mm; }</style></head><body>
 <h1>CAN FD Verification Kit — Report</h1><div class='sub'>Simulation-only, Verilator + cocotb, ISO 11898-1:2015</div>
-<div class='meta'>Artem · korolartem55@gmail.com · github.com/ne1rik/can-fd-core (private, access on request) · vv0.13-2-g244c0c1 · 2026-11-16</div>
+<div class='meta'>Artem · korolartem55@gmail.com · github.com/ne1rik/can-fd-core (private, access on request) · vv0.13.2 · 2026-11-16</div>
 <div class='disc'>Not an industrial IP block. No conformance certificate is claimed. Every number is parsed from a recorded run log.</div>
 <h2>Metrics</h2><table><tr><th>Gate</th><th>Result</th><th>Evidence</th></tr>
 <tr><td>CTU vectors through RTL</td><td>7538 / 7538, 0 failures</td><td><code>logs/ctu_*.log</code></td></tr>
-<tr><td>Model-vs-RTL sweep</td><td>3952 cases, 0 failures</td><td><code>logs/big_*.log</code></td></tr>
+<tr><td>Model-vs-RTL sweep</td><td>5216 cases, 0 failures</td><td><code>logs/big_*.log</code></td></tr>
 <tr><td>CRC-boundary stuffing</td><td>80 cases, 0 failures</td><td><code>logs/bnd_*.log</code></td></tr>
 <tr><td>Model unit tests (pytest)</td><td>248 passed</td><td><code>logs/regress.log</code></td></tr>
 <tr><td>Model vs CTU waveforms</td><td>4999 matched, 0 mismatch, 2539 deferred</td><td><code>logs/xval_model.log</code></td></tr>

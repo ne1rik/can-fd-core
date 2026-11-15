@@ -1,0 +1,242 @@
+{
+ "deferred_brs1": 255,
+ "deferred_crc": {
+  "crc17": 186,
+  "crc21": 69
+ },
+ "deferred_dlc": {
+  "dlc0": 19,
+  "dlc1": 15,
+  "dlc10": 14,
+  "dlc11": 10,
+  "dlc12": 21,
+  "dlc13": 14,
+  "dlc14": 10,
+  "dlc15": 14,
+  "dlc2": 18,
+  "dlc3": 14,
+  "dlc4": 22,
+  "dlc5": 14,
+  "dlc6": 16,
+  "dlc7": 14,
+  "dlc8": 23,
+  "dlc9": 17
+ },
+ "failures": [
+  {
+   "dataset": 1,
+   "dlc": 10,
+   "first_diff": 182,
+   "format": "fd_ext",
+   "id": 287821704,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 3,
+   "first_diff": 53,
+   "format": "fd_base",
+   "id": 1865,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 10,
+   "first_diff": 159,
+   "format": "fd_base",
+   "id": 1581,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 1,
+   "first_diff": 58,
+   "format": "fd_ext",
+   "id": 440766229,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 5,
+   "first_diff": 76,
+   "format": "fd_base",
+   "id": 1281,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 9,
+   "first_diff": 128,
+   "format": "fd_base",
+   "id": 249,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 5,
+   "first_diff": 71,
+   "format": "fd_base",
+   "id": 1996,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 6,
+   "first_diff": 81,
+   "format": "fd_base",
+   "id": 516,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 7,
+   "first_diff": 109,
+   "format": "fd_ext",
+   "id": 360237732,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 1,
+   "first_diff": 57,
+   "format": "fd_ext",
+   "id": 420751787,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 3,
+   "first_diff": 58,
+   "format": "fd_base",
+   "id": 345,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 9,
+   "first_diff": 129,
+   "format": "fd_base",
+   "id": 1356,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 3,
+   "first_diff": 54,
+   "format": "fd_base",
+   "id": 1859,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 7,
+   "first_diff": 108,
+   "format": "fd_ext",
+   "id": 534622784,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 4,
+   "first_diff": 63,
+   "format": "fd_base",
+   "id": 212,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 1,
+   "first_diff": 56,
+   "format": "fd_ext",
+   "id": 124900076,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 4,
+   "first_diff": 62,
+   "format": "fd_base",
+   "id": 1206,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 2,
+   "first_diff": 65,
+   "format": "fd_ext",
+   "id": 228501939,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 5,
+   "first_diff": 70,
+   "format": "fd_base",
+   "id": 1673,
+   "verdict": "prefix_mismatch"
+  },
+  {
+   "dataset": 1,
+   "dlc": 4,
+   "first_diff": 87,
+   "format": "fd_ext",
+   "id": 27637328,
+   "verdict": "prefix_mismatch"
+  }
+ ],
+ "matched": 249,
+ "mismatched": 244,
+ "model_format_coverage": {
+  "crc_width": {
+   "crc15": 249
+  },
+  "dlc": {
+   "dlc0": 23,
+   "dlc1": 33,
+   "dlc2": 36,
+   "dlc3": 32,
+   "dlc4": 26,
+   "dlc5": 34,
+   "dlc6": 29,
+   "dlc7": 36
+  },
+  "format": {
+   "classic_base": 133,
+   "classic_ext": 116
+  },
+  "format_x_crc": {
+   "classic_base|crc15": 133,
+   "classic_ext|crc15": 116
+  },
+  "format_x_pattern": {
+   "classic_base|random": 122,
+   "classic_base|zeros": 11,
+   "classic_ext|random": 103,
+   "classic_ext|zeros": 13
+  },
+  "pattern": {
+   "random": 225,
+   "zeros": 24
+  }
+ },
+ "per_dataset": {
+  "1": {
+   "classic_base:ACK_ONLY_DIFF": 133,
+   "classic_ext:ACK_ONLY_DIFF": 116,
+   "fd_base:deferred_brs1": 127,
+   "fd_base:prefix_mismatch": 143,
+   "fd_ext:deferred_brs1": 128,
+   "fd_ext:prefix_mismatch": 101,
+   "out_of_scope": 252
+  }
+ },
+ "scope": "data frames, erf=0, esi=0; CAN FD BRS=1 deferred (single-phase sim)",
+ "totals": {
+  "classic_base:ACK_ONLY_DIFF": 133,
+  "classic_ext:ACK_ONLY_DIFF": 116,
+  "fd_base:deferred_brs1": 127,
+  "fd_base:prefix_mismatch": 143,
+  "fd_ext:deferred_brs1": 128,
+  "fd_ext:prefix_mismatch": 101
+ }
+}

@@ -5,3 +5,17 @@ PASS  sanity
 PASS  bnd_classic_base
 PASS  bnd_classic_ext
 PASS  big_classic_base
+PASS  big_classic_ext
+PASS  big_fd_base
+PASS  big_fd_ext
+PASS  ctu_classic_base
+PASS  ctu_classic_ext
+PASS  ctu_fd_base
+PASS  ctu_fd_ext
+PASS  bt_units
+PASS  bt_phase_switch
+PASS  rt_matrix_fbff
+PASS  rt_matrix_feff
+PASS  regress
+PASS  xval_model
+PASS  mutation_model

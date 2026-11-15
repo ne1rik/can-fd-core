@@ -8,11 +8,11 @@ th, td { border: 1px solid #ccc; padding: 1.4mm 2mm; text-align: left; vertical-
 th { background: #efefef; } code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; }
 .foot { color: #666; font-size: 8.5pt; margin-top: 6mm; border-top: 1px solid #ddd; padding-top: 2mm; }</style></head><body>
 <h1>Комплект верификации CAN FD — Отчёт</h1><div class='sub'>Только симуляция, Verilator + cocotb, ISO 11898-1:2015</div>
-<div class='meta'>Artem · korolartem55@gmail.com · github.com/ne1rik/can-fd-core (private, access on request) · vv0.13-2-g244c0c1 · 2026-11-16</div>
+<div class='meta'>Artem · korolartem55@gmail.com · github.com/ne1rik/can-fd-core (private, access on request) · vv0.13.2 · 2026-11-16</div>
 <div class='disc'>Не промышленный IP-блок. Сертификация соответствия не заявляется. Каждое число разобрано из лога прогона.</div>
 <h2>Metrics</h2><table><tr><th>Gate</th><th>Result</th><th>Evidence</th></tr>
 <tr><td>CTU-векторы через RTL</td><td>7538 / 7538, 0 отказов</td><td><code>logs/ctu_*.log</code></td></tr>
-<tr><td>Прогон модель-против-RTL</td><td>3952 cases, 0 отказов</td><td><code>logs/big_*.log</code></td></tr>
+<tr><td>Прогон модель-против-RTL</td><td>5216 cases, 0 отказов</td><td><code>logs/big_*.log</code></td></tr>
 <tr><td>Стаффинг на границе CRC</td><td>80 cases, 0 отказов</td><td><code>logs/bnd_*.log</code></td></tr>
 <tr><td>Юнит-тесты модели (pytest)</td><td>248 пройдено</td><td><code>logs/regress.log</code></td></tr>
 <tr><td>Модель против осциллограмм CTU</td><td>4999 совпало, 0 расхождений, 2539 отложено</td><td><code>logs/xval_model.log</code></td></tr>

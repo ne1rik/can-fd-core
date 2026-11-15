@@ -22,241 +22,72 @@
   "dlc8": 23,
   "dlc9": 17
  },
- "failures": [
-  {
-   "dataset": 1,
-   "dlc": 5,
-   "first_diff": 53,
-   "format": "fd_base",
-   "id": 1281,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 4,
-   "first_diff": 50,
-   "format": "classic_base",
-   "id": 1273,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 9,
-   "first_diff": 52,
-   "format": "fd_ext",
-   "id": 386260841,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 3,
-   "first_diff": 43,
-   "format": "classic_ext",
-   "id": 101894496,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 6,
-   "first_diff": 32,
-   "format": "fd_ext",
-   "id": 523388865,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 3,
-   "first_diff": 30,
-   "format": "classic_base",
-   "id": 1654,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 6,
-   "first_diff": 47,
-   "format": "classic_base",
-   "id": 279,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 7,
-   "first_diff": 61,
-   "format": "classic_base",
-   "id": 309,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 3,
-   "first_diff": 28,
-   "format": "fd_base",
-   "id": 640,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 3,
-   "first_diff": 27,
-   "format": "fd_base",
-   "id": 958,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 3,
-   "first_diff": 29,
-   "format": "fd_ext",
-   "id": 527429846,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 2,
-   "first_diff": 10,
-   "format": "classic_base",
-   "id": 125,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 4,
-   "first_diff": 55,
-   "format": "classic_ext",
-   "id": 73676084,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 6,
-   "first_diff": 75,
-   "format": "classic_base",
-   "id": 490,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 6,
-   "first_diff": 51,
-   "format": "fd_base",
-   "id": 1439,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 1,
-   "first_diff": 27,
-   "format": "classic_ext",
-   "id": 208662710,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 7,
-   "first_diff": 22,
-   "format": "classic_base",
-   "id": 2034,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 9,
-   "first_diff": 71,
-   "format": "fd_base",
-   "id": 1541,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 9,
-   "first_diff": 125,
-   "format": "fd_ext",
-   "id": 11112489,
-   "verdict": "prefix_mismatch"
-  },
-  {
-   "dataset": 1,
-   "dlc": 4,
-   "first_diff": 64,
-   "format": "classic_ext",
-   "id": 71087323,
-   "verdict": "prefix_mismatch"
-  }
- ],
- "matched": 430,
- "mismatched": 63,
+ "failures": [],
+ "matched": 493,
+ "mismatched": 0,
  "model_format_coverage": {
   "crc_width": {
-   "crc15": 212,
-   "crc17": 218
+   "crc15": 249,
+   "crc17": 244
   },
   "dlc": {
    "dlc0": 42,
-   "dlc1": 49,
+   "dlc1": 55,
    "dlc10": 24,
-   "dlc2": 57,
-   "dlc3": 41,
-   "dlc4": 44,
-   "dlc5": 52,
-   "dlc6": 41,
-   "dlc7": 46,
-   "dlc8": 18,
-   "dlc9": 16
+   "dlc2": 61,
+   "dlc3": 54,
+   "dlc4": 51,
+   "dlc5": 59,
+   "dlc6": 51,
+   "dlc7": 55,
+   "dlc8": 21,
+   "dlc9": 20
   },
   "format": {
-   "classic_base": 112,
-   "classic_ext": 100,
-   "fd_base": 129,
-   "fd_ext": 89
+   "classic_base": 133,
+   "classic_ext": 116,
+   "fd_base": 143,
+   "fd_ext": 101
   },
   "format_x_crc": {
-   "classic_base|crc15": 112,
-   "classic_ext|crc15": 100,
-   "fd_base|crc17": 129,
-   "fd_ext|crc17": 89
+   "classic_base|crc15": 133,
+   "classic_ext|crc15": 116,
+   "fd_base|crc17": 143,
+   "fd_ext|crc17": 101
   },
   "format_x_pattern": {
-   "classic_base|random": 102,
-   "classic_base|zeros": 10,
-   "classic_ext|random": 87,
+   "classic_base|random": 122,
+   "classic_base|zeros": 11,
+   "classic_ext|random": 103,
    "classic_ext|zeros": 13,
-   "fd_base|random": 120,
+   "fd_base|random": 134,
    "fd_base|zeros": 9,
-   "fd_ext|random": 79,
+   "fd_ext|random": 91,
    "fd_ext|zeros": 10
   },
   "pattern": {
-   "random": 388,
-   "zeros": 42
+   "random": 450,
+   "zeros": 43
   }
  },
  "per_dataset": {
   "1": {
-   "classic_base:ACK_ONLY_DIFF": 112,
-   "classic_base:prefix_mismatch": 21,
-   "classic_ext:ACK_ONLY_DIFF": 100,
-   "classic_ext:prefix_mismatch": 16,
-   "fd_base:ACK_ONLY_DIFF": 129,
+   "classic_base:ACK_ONLY_DIFF": 133,
+   "classic_ext:ACK_ONLY_DIFF": 116,
+   "fd_base:ACK_ONLY_DIFF": 143,
    "fd_base:deferred_brs1": 127,
-   "fd_base:prefix_mismatch": 14,
-   "fd_ext:ACK_ONLY_DIFF": 89,
+   "fd_ext:ACK_ONLY_DIFF": 101,
    "fd_ext:deferred_brs1": 128,
-   "fd_ext:prefix_mismatch": 12,
    "out_of_scope": 252
   }
  },
  "scope": "data frames, erf=0, esi=0; CAN FD BRS=1 deferred (single-phase sim)",
  "totals": {
-  "classic_base:ACK_ONLY_DIFF": 112,
-  "classic_base:prefix_mismatch": 21,
-  "classic_ext:ACK_ONLY_DIFF": 100,
-  "classic_ext:prefix_mismatch": 16,
-  "fd_base:ACK_ONLY_DIFF": 129,
+  "classic_base:ACK_ONLY_DIFF": 133,
+  "classic_ext:ACK_ONLY_DIFF": 116,
+  "fd_base:ACK_ONLY_DIFF": 143,
   "fd_base:deferred_brs1": 127,
-  "fd_base:prefix_mismatch": 14,
-  "fd_ext:ACK_ONLY_DIFF": 89,
-  "fd_ext:deferred_brs1": 128,
-  "fd_ext:prefix_mismatch": 12
+  "fd_ext:ACK_ONLY_DIFF": 101,
+  "fd_ext:deferred_brs1": 128
  }
 }

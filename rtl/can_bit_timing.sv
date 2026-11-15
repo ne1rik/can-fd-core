@@ -5,11 +5,12 @@
 // Bit time = SYNC(1) + TSEG1 + TSEG2 ticks; tick = prescaler system clocks.
 // sample_en pulses at tick (1 + TSEG1); bit_boundary pulses at the last tick.
 //
-// Backward-compatibility mode: TSEG1=0 and TSEG2=0 gives a one-tick bit,
-// so sample_en and bit_boundary pulse on every tick. With prescaler=1 this
-// reproduces the original "one clock = one bit" behaviour exactly.
+// Backward-compatibility mode: TSEG1=0 and TSEG2=0 gives a one-tick bit, so
+// both strobes pulse every tick (prescaler=1 -> one clock = one bit).
 //
-// SSP: ssp_sample_en is sample_en delayed by SSP_OFFSET ticks (data phase only).
+// Phase change (brs_active edge) RE-ALIGNS the counters. Without this the
+// stale tseg_cnt can exceed the new total_ticks-1 and never match again,
+// running to the 9-bit wrap (~500 clocks with no strobes).
 module can_bit_timing #(
     parameter int NBT_PRESCALER = 1,
     parameter int NBT_TSEG1     = 0,
@@ -48,15 +49,17 @@ module can_bit_timing #(
     wire [7:0] active_tseg2     = brs_active ? DBT_TSEG2[7:0]     : NBT_TSEG2[7:0];
 
     wire [8:0] total_ticks = 9'd1 + {1'b0, active_tseg1} + {1'b0, active_tseg2};
-    wire [8:0] sample_tick = 9'd1 + {1'b0, active_tseg1};
+    wire [8:0] sample_tick = {1'b0, active_tseg1};
 
     wire one_tick_bit = (active_tseg1 == 8'd0) && (active_tseg2 == 8'd0);
 
     reg [7:0]  clk_cnt;
     reg [8:0]  tseg_cnt;
     reg [15:0] ssp_shift;
+    reg        brs_active_d;
 
-    wire tick_en = (clk_cnt == active_prescaler - 8'd1);
+    wire tick_en      = (clk_cnt == active_prescaler - 8'd1);
+    wire phase_change = (brs_active != brs_active_d);
 
     assign ssp_sample_en = (SSP_OFFSET == 0 || !brs_active)
         ? sample_en
@@ -69,17 +72,26 @@ module can_bit_timing #(
             sample_en    <= 1'b0;
             bit_boundary <= 1'b0;
             ssp_shift    <= 16'd0;
+            brs_active_d <= 1'b0;
         end else begin
             sample_en    <= 1'b0;
             bit_boundary <= 1'b0;
+            brs_active_d <= brs_active;
 
-            if (tick_en) begin
+            if (phase_change || tick_en) begin
                 clk_cnt <= 8'd0;
             end else begin
                 clk_cnt <= clk_cnt + 8'd1;
             end
 
-            if (tick_en) begin
+            if (phase_change) begin
+                // New phase starts a fresh bit: counters realigned.
+                tseg_cnt <= 9'd0;
+                if (one_tick_bit) begin
+                    sample_en    <= 1'b1;
+                    bit_boundary <= 1'b1;
+                end
+            end else if (tick_en) begin
                 ssp_shift <= {ssp_shift[14:0], sample_en};
 
                 if (one_tick_bit) begin

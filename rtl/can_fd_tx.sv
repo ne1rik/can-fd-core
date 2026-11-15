@@ -189,6 +189,8 @@ module can_fd_tx #(
                     wr_len <= 0; raw_idx <= 0; run_cnt <= 0; dyn <= 0;
                     tail_idx <= 0; c_crc <= 15'd0; c_crc_idx <= 4'd0;
                     crc_reg <= (tx_dlc >= 4'd11) ? 21'h100000 : 21'h010000;
+                    brs_active_reg <= 1'b0;
+                    brs_wr_idx <= 11'd0;
                     state <= F_RAW;
                 end
 
@@ -324,7 +326,7 @@ module can_fd_tx #(
                             tx_bit <= frame_buf[rd_idx];
                             tx_bit_valid <= 1'b1;
                             if (brs_reg && !is_cls && !brs_active_reg &&
-                                rd_idx == brs_wr_idx) begin
+                                rd_idx == brs_wr_idx + 11'd1) begin
                                 brs_active_reg <= 1'b1;
                             end
                             rd_idx <= rd_idx + 11'd1;
@@ -332,7 +334,10 @@ module can_fd_tx #(
                     end else state <= DONE;
                 end
 
-                DONE: state <= IDLE;
+                DONE: begin
+                    state <= IDLE;
+                    brs_active_reg <= 1'b0;
+                end
                 default: state <= IDLE;
             endcase
         end

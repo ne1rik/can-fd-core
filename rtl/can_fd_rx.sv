@@ -46,7 +46,7 @@ module can_fd_rx #(
         .SSP_OFFSET(SSP_OFFSET), .CLK_PERIOD_NS(CLK_PERIOD_NS)
     ) u_timing (
         .clk(clk), .rst_n(rst_n),
-        .brs_active(brs_seen),
+        .brs_active(brs_phase_r),
         .sync_edge(sof_sync),
         .current_bit_time_ns(bt_bit_time_ns),
         .sample_en(bt_sample_en),
@@ -68,6 +68,8 @@ module can_fd_rx #(
     reg [7:0]  dyn;
     reg [3:0]  dlc_shift;
     reg        brs_seen;
+    reg        brs_phase_r;
+    reg        brs_switch_pend;
     reg        form_err;
 
     reg [16:0] crc17;
@@ -144,6 +146,39 @@ module can_fd_rx #(
             payload_bytes = n;
         end
     endfunction
+
+    // Data-phase switch aligned to bit boundary: the same event TX uses.
+    // Cleared in IDLE so every new frame starts in nominal phase.
+    // Two-stage data-phase switch, aligned with TX.
+    // Stage 1: latch the BRS value at its sample point (raw_idx is the
+    //          de-stuffed index, so prior stuffing does not shift it).
+    // Stage 2: commit on the bit boundary that ends the nominal BRS bit,
+    //          the same event TX uses (rd_idx == brs_wr_idx + 1).
+    // Reading brs_seen directly in the sample cycle never worked: it is
+    // written by NBA in that same cycle, so it still reads 0 there.
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            brs_phase_r     <= 1'b0;
+            brs_switch_pend <= 1'b0;
+        end else if (state == IDLE) begin
+            brs_phase_r     <= 1'b0;
+            brs_switch_pend <= 1'b0;
+        end else begin
+            if (!is_cls && bt_sample_en && !brs_phase_r && !brs_switch_pend &&
+                raw_idx == (is_ext ? 11'd35 : 11'd16))
+                brs_switch_pend <= rx_bit;
+
+            if (bt_bit_boundary && !brs_phase_r) begin
+                // Degenerate TSEG2=0: sample and boundary share a cycle.
+                if (brs_switch_pend ||
+                    (!is_cls && bt_sample_en &&
+                     raw_idx == (is_ext ? 11'd35 : 11'd16) && rx_bit)) begin
+                    brs_phase_r     <= 1'b1;
+                    brs_switch_pend <= 1'b0;
+                end
+            end
+        end
+    end
 
     assign rx_ack = (state == TAIL && tail_idx == 4'd1) ? 1'b0 : 1'b1;
 

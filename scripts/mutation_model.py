@@ -1,3 +1,4 @@
+import os
 import json
 #!/usr/bin/env python3
 """Mutation testing of the reference MODEL, oracle = CTU cross-validation.
@@ -90,11 +91,25 @@ def clean():
     return r.stdout.strip() == ""
 
 
+ENV_ORACLE = dict(os.environ)
+ENV_ORACLE["PYTHONDONTWRITEBYTECODE"] = "1"  # оракул не создаёт pyc (анти-отравление)
+
+def _purge_model_pyc():
+    pc = (ROOT / MODEL).parent / "__pycache__"
+    if pc.exists():
+        for _p in pc.glob((ROOT / MODEL).stem + ".*.pyc"):
+            _p.unlink()
+
 def oracle():
     p = subprocess.run([sys.executable, "scripts/xval_ctu_full.py",
                         "--only", "1", "--out", "coverage/_mut"],
-                       capture_output=True, text=True, cwd=ROOT)
-    return p.returncode == 0
+                       capture_output=True, text=True, cwd=ROOT, env=ENV_ORACLE)
+    q = subprocess.run([sys.executable, "scripts/crc21_golden_check.py", "--check"],
+                       capture_output=True, text=True, cwd=ROOT, env=ENV_ORACLE)
+    if q.returncode != 0:
+        out = (q.stdout or q.stderr).strip()
+        print("       golden-check:", out.splitlines()[-1] if out else "exit %d" % q.returncode)
+    return (p.returncode == 0) and (q.returncode == 0)
 
 
 def main():
@@ -108,43 +123,8 @@ def main():
     problems = []
 
     
-    # === Расширение корпуса синтетическими CRC-21 кадрами ===
-    # CTU-корпус не содержит кадров с FD + BRS=0 + DLC>=11, что создаёт дыру
-    # в верификации CRC-21. Добавляем синтетические кадры для закрытия дыры.
-    vec_path = ROOT / "coverage" / "ctu_vectors_all.json"
-    if vec_path.exists():
-        vectors = json.loads(vec_path.read_text())
-        # Проверяем, есть ли уже синтетические CRC-21 кадры
-        has_crc21 = any(v.get("frame_format") == 1 and v.get("brs") == 0 and v.get("dlc", 0) >= 11 
-                        for v in vectors)
-        if not has_crc21:
-            # Добавляем синтетические кадры с DLC 11-15, BRS=0
-            for dlc in [11, 12, 13, 14, 15]:
-                for pattern in ["zeros", "ones", "alt"]:
-                    if pattern == "zeros":
-                        data = [0] * {11: 20, 12: 24, 13: 32, 14: 48, 15: 64}[dlc]
-                    elif pattern == "ones":
-                        data = [0xFF] * {11: 20, 12: 24, 13: 32, 14: 48, 15: 64}[dlc]
-                    else:
-                        data = [0xAA if i % 2 == 0 else 0x55 
-                                for i in range({11: 20, 12: 24, 13: 32, 14: 48, 15: 64}[dlc])]
-                    
-                    vectors.append({
-                        "format": "fd_base",
-                        "frame_format": 1,
-                        "ident_type": 0,
-                        "rtr": 0,
-                        "brs": 0,
-                        "esi": 0,
-                        "erf": 0,
-                        "dlc": dlc,
-                        "id": 0x16b,
-                        "data": data,
-                        "synthetic": True
-                    })
-            
-            vec_path.write_text(json.dumps(vectors, indent=1))
-            print("✅ Добавлены синтетические CRC-21 кадры для закрытия дыры верификации")
+    # CRC-21 дыра закрыта scripts/crc21_golden_check.py (fixture-оракул).
+    # Инъекция удалена: xval пересобирает ctu_vectors_all.json и стирал кадры (0x16b=0).
     
     for m in MUTANTS:
         n = original.count(m.old)
@@ -154,6 +134,7 @@ def main():
             problems.append(m.name)
             continue
 
+        _purge_model_pyc()  # purge ДО записи мутанта (pyc-коллизия same second + same size)
         path.write_text(original.replace(m.old, m.new))
         print(f"[....] {m.name}", flush=True)
         try:
@@ -163,6 +144,14 @@ def main():
             print(f"       {e}")
         finally:
             path.write_text(original)
+            _st = path.stat()
+            pass  # DISABLED-FOR-BISECT: os.utime(path, ns=(_st.st_atime_ns, _st.st_mtime_ns + 1_000_000_000))  # ломаем совпадение mtime-секунды с pyc-заголовком
+            _pc = path.parent / '__pycache__'
+            if _pc.exists():
+                for _p in _pc.glob(path.stem + '.*.pyc'):
+                    _p.unlink()
+            if path.read_text() != original:
+                raise RuntimeError('MODEL NOT RESTORED byte-exact: %s' % path)
 
         if status == m.expect:
             tag = "KILLED" if status == "KILLED" else "GAP-CONFIRMED"

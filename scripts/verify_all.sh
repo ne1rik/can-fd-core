@@ -18,6 +18,7 @@ run() {
 
 run prep bash -c 'touch tests/__init__.py && python3 scripts/xval_ctu_extract_all.py'
 run clean bash -c 'rm -rf sim_build_loopback sim_build_loopback_ext*_cls* sim_build_inject sim_build_inject_ext*_cls* sim_build_tx sim_build_aux sim_build_coverage sim_build_cov_inject'
+run clean bash -c 'find . -type d \( -name __pycache__ -o -name .pytest_cache \) -prune -exec rm -rf {} +'  # guard: stale bytecode after mutation runs
 
 run sanity bash -c '
 set -e
@@ -42,6 +43,14 @@ run ctu_classic_base make -f Makefile.loopback EXTENDED=0 CLASSIC=1 TEST_MODULES
 run ctu_classic_ext  make -f Makefile.loopback EXTENDED=1 CLASSIC=1 TEST_MODULES=tests.test_ctu_rtl
 run ctu_fd_base      make -f Makefile.loopback EXTENDED=0 CLASSIC=0 TEST_MODULES=tests.test_ctu_rtl
 run ctu_fd_ext       make -f Makefile.loopback EXTENDED=1 CLASSIC=0 TEST_MODULES=tests.test_ctu_rtl
+
+# Bit-timing gates. These were missing from the runner, so the two-phase
+# BRS work was not protected by regression. Each stage gets its own build
+# directory because the build encodes the timing parameters.
+run bt_units bash -c 'rm -rf sim_build_bt_units && make -f Makefile.bittiming SIM_BUILD=$PWD/sim_build_bt_units TEST_MODULES=tests.test_bit_timing'
+run bt_phase_switch bash -c 'rm -rf sim_build_bt_ps && make -f Makefile.bittiming SIM_BUILD=$PWD/sim_build_bt_ps NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_phase_switch'
+run rt_matrix_fbff bash -c 'rm -rf sim_build_rt_fbff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_rt_fbff EXTENDED=0 CLASSIC=0 NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
+run rt_matrix_feff bash -c 'rm -rf sim_build_rt_feff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_rt_feff EXTENDED=1 CLASSIC=0 NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
 
 run regress make -f Makefile.regress
 run xval_model     python3 scripts/xval_ctu_full.py

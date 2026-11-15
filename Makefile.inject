@@ -13,7 +13,7 @@ else
 SIM_BUILD ?= $(PWD)/sim_build_inject_ext$(EXTENDED)_cls$(CLASSIC)
 endif
 
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback_inject.sv
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_fd_rx.sv $(PWD)/rtl/can_fd_loopback_inject.sv $(PWD)/rtl/can_bit_timing.sv
 
 TOPLEVEL = can_fd_loopback_inject
 COCOTB_TOPLEVEL = can_fd_loopback_inject

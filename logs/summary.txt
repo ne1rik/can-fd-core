@@ -11,6 +11,6 @@ PASS  ctu_classic_base
 PASS  ctu_classic_ext
 PASS  ctu_fd_base
 PASS  ctu_fd_ext
-FAIL  regress
+PASS  regress
 PASS  xval_model
 PASS  mutation_model

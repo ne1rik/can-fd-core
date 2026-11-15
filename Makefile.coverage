@@ -1,6 +1,6 @@
 SIM ?= verilator
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv
+VERILOG_SOURCES = $(PWD)/rtl/can_fd_tx.sv $(PWD)/rtl/can_bit_timing.sv
 TOPLEVEL = can_fd_tx
 COCOTB_TEST_MODULES = tests.test_functional_coverage
 SIM_BUILD = $(PWD)/sim_build_coverage

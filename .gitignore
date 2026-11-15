@@ -11,3 +11,4 @@ venv/
 coverage.dat
 *.dat
 scripts/smoke_formal_work/
+*:Zone.Identifier

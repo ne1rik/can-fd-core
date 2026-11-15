@@ -16,7 +16,7 @@ run() {
   fi
 }
 
-run prep bash -c 'touch tests/__init__.py && python3 scripts/xval_ctu_extract_all.py'
+run prep bash -c 'touch tests/__init__.py && python3 scripts/xval_ctu_extract_all.py && python3 scripts/generate_synthetic_corpus.py'
 run clean bash -c 'rm -rf sim_build_loopback sim_build_loopback_ext*_cls* sim_build_inject sim_build_inject_ext*_cls* sim_build_tx sim_build_aux sim_build_coverage sim_build_cov_inject'
 run clean bash -c 'find . -type d \( -name __pycache__ -o -name .pytest_cache \) -prune -exec rm -rf {} +'  # guard: stale bytecode after mutation runs
 

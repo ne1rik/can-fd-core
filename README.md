@@ -31,7 +31,7 @@ Every claim in this repository is backed by a run whose log is kept in `logs/`.
 
 **Corpus:** 7553 vectors — 1238 Classic Base, 1246 Classic Extended, 2557 FD Base, 2512 FD Extended. Extracted from the open CTU CAN FD reference dataset. 15 synthetic FD frames (DLC 11–15, BRS=0) were added to close a CRC-21 mutation gap.
 
-**Deferred, not hidden:** 2539 FD BRS=1 vectors are excluded from the fixed-rate waveform cross-check because it cannot follow a mid-frame bit-rate switch. Those frames are covered instead by the real-timing matrix.
+**Deferred:** 2539 FD BRS=1 vectors are excluded from the fixed-rate waveform cross-check because it cannot follow a mid-frame bit-rate switch. Those frames are covered instead by the real-timing matrix.
 
 ## Architecture
 

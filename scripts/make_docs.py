@@ -125,8 +125,24 @@ patterns 0x00 / 0xFF / alternating, for both FBFF and FEFF).
   cross-check: it samples at a fixed rate and cannot follow a mid-frame rate
   switch. Those frames are covered by the real-timing matrix instead.
 * **Prescaler > 1 with a very short data phase** (`NBT_PRESCALER=2`, DBT=3
-  clocks) fails the matrix. Reproduced on the pre-fix baseline, so it is a
-  pre-existing resynchronisation limitation, not a regression.
+  clocks) is now covered, not deferred. It used to fail: `sync_edge` was
+  sampled only inside the `tick_en` branch of `can_bit_timing`, so with a
+  prescaler > 1 a one-clock sync pulse landing on a "blind" clock
+  (`clk_cnt != prescaler-1`) was dropped outright. The receiver then missed
+  SOF hard synchronisation whenever the edge did not coincide with a tick,
+  and long frames desynchronised (7/30 matrix cases failed on the baseline).
+  Fixed by restarting the bit sequencer on the sync clock itself:
+  `tseg_cnt` clears on the sync clock (the prescaler keeps its phase, so the
+  bit period stays exact) and sample strobes registered by the pre-sync bit
+  sequence are masked for the sync clock and the clock after it - otherwise
+  a stale strobe plus the restarted cadence strobe would put two samples
+  into one transmitted bit and shift the received stream by a whole bit.
+  One-tick-bit mode (`TSEG1=0, TSEG2=0`) skips both the restart and the
+  mask, keeping the legacy behaviour bit-exact. Covered by
+  `tests/test_prescaler2_short_dbt.py` (unit level: blind-clock and
+  on-tick sync in both phases, exact restarted-boundary timing) and by the
+  D5 matrix gates `rt_matrix_d5_fbff` / `rt_matrix_d5_feff`
+  (`NBT_PRESCALER=2`, DBT=3 clocks, 30 cases each, 0 failures).
 * **Fault confinement is not implemented.** TEC/REC, error frames, bus-off.
 * **Simulation only.** No FPGA build, no silicon, no ISO 26262 qualification.
 
@@ -222,8 +238,26 @@ BRS — то же событие, что использует передатчи
   осциллограмм: он сэмплирует с фиксированной частотой и не может проследить
   смену скорости внутри кадра. Эти кадры покрыты матрицей реального тайминга.
 * **Prescaler > 1 с очень короткой data-фазой** (`NBT_PRESCALER=2`, DBT=3
-  такта) валит матрицу. Воспроизведено на базлайне до правок, то есть это
-  существовавшее ограничение ресинхронизации, а не регрессия.
+  такта) теперь покрыт, а не отложен. Раньше матрица падала: `sync_edge`
+  сэмплировался только внутри ветки `tick_en` модуля `can_bit_timing`, поэтому
+  при prescaler > 1 одно-тактовый синхроимпульс, попавший на «слепой» такт
+  (`clk_cnt != prescaler-1`), терялся целиком. Приёмник пропускал жёсткую
+  синхронизацию на SOF всякий раз, когда фронт не совпадал с тактом, и длинные
+  кадры рассинхронизировались (на базлайне падали 7 из 30 случаев матрицы).
+  Исправлено перезапуском секвенсера битов по самому такту синхронизации:
+  `tseg_cnt` сбрасывается в такт синхронизации (prescaler сохраняет свою
+  фазу, поэтому длительность бита остаётся точной), а стробы выборки,
+  зарегистрированные ещё старой последовательностью битов, маскируются в
+  такт синхронизации и следующий за ним - иначе устаревший строб вместе со
+  стробом перезапущенной последовательности дал бы две выборки внутри одного
+  переданного бита и сдвинул бы принятый поток на целый бит. Режим
+  одного такта (`TSEG1=0, TSEG2=0`) пропускает и перезапуск, и маскирование,
+  сохраняя прежнее поведение бит-в-бит. Покрыто
+  `tests/test_prescaler2_short_dbt.py` (уровень модуля: синхронизация на
+  «слепом» такте и на такте в обеих фазах, точный тайминг границы
+  перезапущенного бита) и гейтами D5-матрицы `rt_matrix_d5_fbff` /
+  `rt_matrix_d5_feff` (`NBT_PRESCALER=2`, DBT=3 такта, по 30 случаев,
+  0 провалов).
 * **Fault confinement не реализован.** TEC/REC, error frames, bus-off.
 * **Только симуляция.** Нет FPGA-сборки, нет кремния, нет квалификации
   ISO 26262.

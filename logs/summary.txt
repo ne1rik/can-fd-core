@@ -16,6 +16,9 @@ PASS  bt_units
 PASS  bt_phase_switch
 PASS  rt_matrix_fbff
 PASS  rt_matrix_feff
+PASS  bt_d5_sync
+PASS  rt_matrix_d5_fbff
+PASS  rt_matrix_d5_feff
 PASS  regress
 PASS  xval_model
 PASS  mutation_model

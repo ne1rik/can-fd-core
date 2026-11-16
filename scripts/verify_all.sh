@@ -51,6 +51,12 @@ run bt_units bash -c 'rm -rf sim_build_bt_units && make -f Makefile.bittiming SI
 run bt_phase_switch bash -c 'rm -rf sim_build_bt_ps && make -f Makefile.bittiming SIM_BUILD=$PWD/sim_build_bt_ps NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_phase_switch'
 run rt_matrix_fbff bash -c 'rm -rf sim_build_rt_fbff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_rt_fbff EXTENDED=0 CLASSIC=0 NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
 run rt_matrix_feff bash -c 'rm -rf sim_build_rt_feff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_rt_feff EXTENDED=1 CLASSIC=0 NBT_PRESCALER=1 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=1 DBT_TSEG1=3 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
+# D5 regression gates: prescaler > 1 with a very short data phase. These pin
+# the hard-sync fix in can_bit_timing (sync_edge was dropped on blind
+# prescaler clocks) and must stay green together with the docs section 6.
+run bt_d5_sync bash -c 'rm -rf sim_build_d5_sync && make -f Makefile.bittiming SIM_BUILD=$PWD/sim_build_d5_sync NBT_PRESCALER=2 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=2 DBT_TSEG1=1 DBT_TSEG2=1 TEST_MODULES=tests.test_prescaler2_short_dbt'
+run rt_matrix_d5_fbff bash -c 'rm -rf sim_build_d5_fbff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_d5_fbff EXTENDED=0 CLASSIC=0 NBT_PRESCALER=2 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=2 DBT_TSEG1=1 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
+run rt_matrix_d5_feff bash -c 'rm -rf sim_build_d5_feff && make -f Makefile.loopback SIM_BUILD=$PWD/sim_build_d5_feff EXTENDED=1 CLASSIC=0 NBT_PRESCALER=2 NBT_TSEG1=12 NBT_TSEG2=4 DBT_PRESCALER=2 DBT_TSEG1=1 DBT_TSEG2=1 TEST_MODULES=tests.test_timing_matrix'
 
 run regress make -f Makefile.regress
 run xval_model     python3 scripts/xval_ctu_full.py

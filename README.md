@@ -24,7 +24,7 @@ Every claim in this repository is backed by a run whose log is kept in `logs/`.
 
 | Gate | Result | Source |
 |---|---|---|
-| CTU vectors through RTL | 7538 / 7538, 0 failures | `logs/ctu_*.log` |
+| CTU vectors through RTL | 7553 / 7553, 0 failures (7538 CTU + 15 synthetic) | `logs/ctu_*.log` |
 | Model-vs-RTL sweep | 5216 cases, 0 failures | `logs/big_*.log` |
 | CRC-boundary stuffing | 80 cases, 0 failures | `logs/bnd_*.log` |
 | Model unit tests (pytest) | 248 passed | `logs/regress.log` |

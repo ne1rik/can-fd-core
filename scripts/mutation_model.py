@@ -145,7 +145,7 @@ def main():
         finally:
             path.write_text(original)
             _st = path.stat()
-            pass  # DISABLED-FOR-BISECT: os.utime(path, ns=(_st.st_atime_ns, _st.st_mtime_ns + 1_000_000_000))  # ломаем совпадение mtime-секунды с pyc-заголовком
+            os.utime(path, ns=(_st.st_atime_ns, _st.st_mtime_ns + 1_000_000_000))  # break mtime-second equality with pyc header
             _pc = path.parent / '__pycache__'
             if _pc.exists():
                 for _p in _pc.glob(path.stem + '.*.pyc'):

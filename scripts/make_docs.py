@@ -79,9 +79,12 @@ value shows as `n/a` rather than a plausible substitute.
 Vectors are extracted from the open CTU CAN FD reference dataset
 (`reference_data_set_*.vhd` under `test/main_tb/`). These are reference
 simulation datasets, not silicon captures. Synthetic frames are marked
-`synthetic: true` and exist to close a CRC-21 mutation gap; they are used by
-the model mutation harness, not by the RTL corpus run. That is why the corpus
-total and the RTL run total differ.
+`synthetic: true`; they close a CRC-21 coverage hole (FD, BRS=0, DLC>=11) that
+the CTU data does not constrain. `scripts/generate_synthetic_corpus.py` appends
+them to `ctu_vectors_all.json` during `prep`, so they also run through the RTL
+corpus gate: the corpus total and the RTL run total are equal. The waveform
+cross-check reads the `.vhd` datasets directly and excludes synthetic frames
+({m["xval_matched"]} matched + {m["xval_deferred"]} deferred = CTU frames only).
 
 ## 3. Comparison rules
 
@@ -195,9 +198,12 @@ python3 scripts/make_report.py --lang both
 Векторы извлечены из открытого эталонного набора CTU CAN FD
 (`reference_data_set_*.vhd` в `test/main_tb/`). Это эталонные наборы для
 симуляции, а не захваты с кремния. Синтетические кадры помечены
-`synthetic: true` и добавлены для закрытия пробела в мутационном покрытии
-CRC-21; они используются мутационным стендом модели, а не RTL-прогоном
-корпуса. Поэтому итог корпуса и итог RTL-прогона различаются.
+`synthetic: true`; они закрывают пробел покрытия CRC-21 (FD, BRS=0, DLC>=11),
+который данные CTU не ограничивают. Скрипт `scripts/generate_synthetic_corpus.py`
+дописывает их в `ctu_vectors_all.json` на стадии `prep`, поэтому они проходят и
+через RTL-гейт корпуса: итог корпуса и итог RTL-прогона совпадают. Кросс-чек
+эталонных последовательностей читает `.vhd`-наборы напрямую и синтетику не
+включает ({m["xval_matched"]} совпало + {m["xval_deferred"]} отложено = только кадры CTU).
 
 ## 3. Правила сравнения
 

@@ -119,6 +119,19 @@ def main():
 
     path = ROOT / MODEL
     original = path.read_text()
+    
+    # E18: Fail-closed check. Ensure fixture exists and matches pristine model MD5.
+    import hashlib, json
+    fixture_path = ROOT / "coverage" / "crc21_golden.json"
+    if not fixture_path.exists():
+        print("FATAL: crc21_golden.json missing. Run scripts/crc21_golden_check.py --freeze first.", file=sys.stderr)
+        sys.exit(2)
+    fixture_data = json.loads(fixture_path.read_text())
+    current_md5 = hashlib.md5(path.read_bytes()).hexdigest()
+    if fixture_data.get("model_md5") != current_md5:
+        print(f"FATAL: Fixture MD5 mismatch! Expected {fixture_data.get('model_md5')}, got {current_md5}.", file=sys.stderr)
+        sys.exit(2)
+    
     rows = []
     problems = []
 

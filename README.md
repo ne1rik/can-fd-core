@@ -22,6 +22,8 @@ Every claim in this repository is backed by a run whose log is kept in `logs/`.
 
 ## Verified results
 
+**Full Verification Report (PDF):** [Download from Release v0.14.0](https://github.com/ne1rik/can-fd-core/releases/download/v0.14.0/verification_report_ru.pdf)
+
 | Gate | Result | Source |
 |---|---|---|
 | CTU vectors through RTL | 7553 / 7553, 0 failures (7538 CTU + 15 synthetic) | `logs/ctu_*.log` |

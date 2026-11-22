@@ -6,7 +6,7 @@ Simulation-only CAN FD verification infrastructure and an RTL core built on **Ve
 
 **Not an industrial IP block. No conformance certificate is claimed.**
 
-TG: @art9kr
+TG: @ne1rik
 
 [Русская версия](README.ru.md)
 
